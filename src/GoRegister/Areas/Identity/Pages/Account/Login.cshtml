@@ -1,0 +1,42 @@
+﻿@page
+@model LoginModel
+
+@{
+    ViewData["Title"] = "Log in";
+}
+
+<div class="row">
+    <div class="col-lg-6 d-flex align-items-center justify-content-center">
+        <img src="/assets/images/gbt_logo.jpg" class="img-responsive" />
+    </div>
+    <div class="col-lg-6">
+        <div class="p-5">
+            <div class="text-center">
+                <h1 class="h4 text-gray-900 mb-4">Welcome Back!</h1>
+            </div>
+            <form class="user" method="post"> 
+                <div asp-validation-summary="All" class="text-danger"></div>
+                <div class="form-group">
+                    <input type="email" autocomplete="off" class="form-control" asp-for="Input.Email" aria-describedby="emailHelp" placeholder="Email Address">
+                </div>
+                <div class="form-group">
+                    <input type="password" autocomplete="off" class="form-control" asp-for="Input.Password" placeholder="Password">
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary btn-user btn-block">
+                        Login
+                    </button>
+                </div>
+            </form>
+            <hr>
+            <div class="text-center">
+                <a id="forgot-password" asp-page="./ForgotPassword">Forgot your password?</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

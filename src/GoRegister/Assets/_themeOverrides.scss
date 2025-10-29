@@ -1,0 +1,35 @@
+﻿body {
+    color: var(--body-color);
+    background-color: var(--body-bg);
+    font-family: var(--body-font);
+}
+
+a {
+    color: var(--link-color);
+
+    &:hover {
+        color: var(--link-hover-color);
+        text-decoration: var(--link-hover-decoration);
+    }
+}
+
+h1, h2, h3, h4, h5, h6 {
+    color: var(--h-color, var(--body-color));
+    font-family: var(--h-font);
+}
+
+.btn-primary {
+    background-color: var(--primary);
+    
+    &:hover {
+        background-color: var(--primary-dark);
+    }
+}
+
+.btn-outline-primary {
+    border-color: var(--primary);
+
+    &:hover {
+        background-color: var(--primary);
+    }
+}

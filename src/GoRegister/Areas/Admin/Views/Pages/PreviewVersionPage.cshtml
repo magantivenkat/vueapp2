@@ -1,0 +1,26 @@
+﻿@model GoRegister.ApplicationCore.Domain.CustomPages.Models.CustomPageVersionModel
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml"; ;
+}
+
+<div id="page-config" data-page="preview-version"></div>
+
+<div id="content-wrapper" class="d-flex flex-column">
+    <div id="content">
+        <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
+            <div class="d-flex justify-content-between align-items-center w-100">
+                <span class="font-weight-bold">
+                    Preview Version Page
+                </span>
+                <a id="btnInfo" class="btn btn-info" href="#"><i class="far fa-eye"></i> Close Preview</a>
+            </div>
+        </nav>
+        <div class="row">
+            <div class="col-md-12">
+                @*@Html.Raw(Model.Content)*@
+                @(Model.Content)
+            </div>
+        </div>
+    </div>
+
+</div>

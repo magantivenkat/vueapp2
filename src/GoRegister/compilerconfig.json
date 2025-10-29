@@ -1,0 +1,21 @@
+﻿[
+  {
+    "outputFile": "wwwroot/assets/admin/css/admin.css",
+    "inputFile": "Areas/Admin/Assets/scss/admin.scss",
+    "options": {
+      "includePath": "Assets --include-path=./clientapp/node_modules"
+    }
+  },
+  {
+    "outputFile": "Assets/vendor/bootstrap/scss/_alert.css",
+    "inputFile": "Assets/vendor/bootstrap/scss/_alert.scss"
+  },
+  {
+    "outputFile": "Themes/Matcha/Assets/theme.css",
+    "inputFile": "Themes/Matcha/Assets/theme.scss"
+  },
+  {
+    "outputFile": "wwwroot/assets/styles/client.css",
+    "inputFile": "Assets/client.scss"
+  }
+]

@@ -1,0 +1,120 @@
+﻿@using GoRegister.ApplicationCore.Data.Models
+@model IEnumerable<GoRegister.ApplicationCore.Domain.ProjectPages.Models.ProjectPageModel>
+
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<div id="page-config" data-page="pages-index" data-posturl="@Url.ProjectAction("UpdateOrder", "Pages")"></div>
+
+<div class="d-flex justify-content-between align-items-center">
+    <h1>Website Pages</h1>
+    <a-proj class="btn btn-success" asp-action="Create">Create New</a-proj>
+</div>
+
+<div id="result"></div>
+
+@if (Model != null)
+{
+    <table class="table table-bordered" id="dataTable">
+        <thead>
+            <tr>
+                <th style="width:5%"></th>
+                <th></th>
+                <th style="width:60%">
+                    @Html.DisplayNameFor(model => model.Title)
+                </th>
+                <th style="width:10%">Is Visible</th>
+                <th style="width:120%"></th>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                foreach (var item in Model)
+                {
+                        <tr class="@(item.IsVisible ? "" : "table-secondary")">
+                            @*<td>@item.MenuPosition <i class="fas fa-arrows-alt"></i></td>*@
+                            <td><i class="fas fa-arrows-alt"></i></td>
+                            <td>@item.Id </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.Title)
+                            </td>
+                            @*<td>@(item.IsVisible ? "Visible" : "Hidden")</td>*@
+                            <td style="text-align:center">
+                                @if (item.IsVisible)
+                                {
+                                    <span><i class="fas fa-check-circle fa-lg"></i></span>
+                                }
+                                else
+                                {
+                                    <span><i class="fas fa-times-circle fa-lg"></i></span>
+                                }
+                            </td>
+                            <td class="text-right">
+
+                            @if (item.Type == ProjectPage.PageType.Registration)
+                            {
+                                <a-proj asp-action="EditRegistrationPage" asp-route-id="@item.PageId" class="btn btn-primary btn-sm">Edit</a-proj>
+                            }
+                            else
+                            {
+                            <a-proj asp-action="Edit" asp-route-id="@item.PageId" class="btn btn-primary btn-sm">Edit</a-proj>
+                            <a-proj asp-action="Details" asp-route-id="@item.PageId" class="btn btn-info btn-sm">Details</a-proj>
+                            }
+
+</td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+}
+
+
+
+
+<div id="version-modal-container" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="modal-container-label" aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Custom Page Versions</h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p id="version-loading">LOADING VERSIONS....</p>
+                <div id="customPageVersionDetailsView" class="mb-2 mt-2">
+
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<div id="audit-modal-container" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="modal-container-label" aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Custom Page Audits</h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p id="loading">LOADING AUDITS....</p>
+                <div id="customPageAuditDetailsView" class="mb-2 mt-2">
+
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+

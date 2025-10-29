@@ -1,0 +1,20 @@
+﻿@model string
+
+@functions {
+    string IsActive(string tab)
+    {
+        return Model == tab ? " active " : " ";
+    }
+}
+
+<ul class="nav nav-tabs nav-fill">
+    <li class="nav-item">
+        <a-proj asp-action="Index" class="nav-link @IsActive("General")">Details</a-proj>
+    </li>
+    <li class="nav-item">
+        <a-proj asp-action="Password" class="nav-link @IsActive("Password")">Security</a-proj>
+    </li>
+    <li class="nav-item">
+        <a-proj asp-action="Share" class="nav-link @IsActive("Share")">Share</a-proj>
+    </li>
+</ul>

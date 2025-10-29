@@ -1,0 +1,45 @@
+﻿@model GoRegister.ApplicationCore.Domain.Registration.Services.RegistrationService.DelegateAuditViewModel
+
+
+<vc:delegate user-id="Model.Id" />
+
+<div class="row">
+    <div class="col">
+        <h2>Communication History</h2>
+        <div class="card mb-2">
+            <div class="card-body">
+                <div>
+                    <span class="font-italic">Coming soon</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <h2>Change History</h2>
+        @foreach (var audit in Model.Audits)
+        {
+            <div class="card mb-2">
+                <div class="card-body">
+                    <div>
+                        <strong>Actioned by: @audit.ActionedBy (@audit.ActionedOnFormatted)</strong>
+                    </div>
+                    @foreach (var fieldAudit in audit.FieldAudits)
+                    {
+                        if (string.IsNullOrWhiteSpace(fieldAudit.OldValue))
+                        {
+                            <div>
+                                @fieldAudit.FieldName: @fieldAudit.NewValue
+                            </div>
+                        }
+                        else
+                        {
+                            <div>
+                                @fieldAudit.FieldName: @fieldAudit.OldValue -> @fieldAudit.NewValue
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+        }
+    </div>
+</div>

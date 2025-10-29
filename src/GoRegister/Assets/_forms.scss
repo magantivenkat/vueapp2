@@ -1,0 +1,23 @@
+﻿.bs-managed-form {
+    .invalid-feedback {
+        display: block;
+    }
+
+    .form-group-invalid {
+        .custom-select, .form-control {
+            border-color: #dc3545;
+        }
+    }
+}
+
+/*.form-wizard .form-wizard-steps > li .gr-form-wizard-dot {
+    &:after {
+        background-color: var(--form-wizard-dot-color, #007bff)
+    }
+}
+
+.form-wizard .form-wizard-steps > li.active > .gr-form-wizard-dot,
+.form-wizard .form-wizard-steps > li.completed > .gr-form-wizard-dot,
+.form-wizard .form-wizard-steps > li .progress > .progress-bar {
+    background-color: var(--form-wizard-dot-bg-color, #94c0ee);
+}*/

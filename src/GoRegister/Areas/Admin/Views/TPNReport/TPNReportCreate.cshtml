@@ -1,0 +1,47 @@
+﻿@model GoRegister.ApplicationCore.Domain.TPNReports.Models.TPNReportModel
+
+<div asp-validation-summary="All" class="text-danger"></div>
+
+<div id="page-config" data-page="tpnreport-create"></div>
+
+<div class="card">
+    <div class="card-header">
+        <h4>Submit TPN Report Request</h4>
+    </div>
+
+    <div class="card-body">
+        <form id="AddTPNReportForm">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label asp-for="ClientId" class="control-label mt-2"> Client </label>
+                        <select asp-for="ClientId" asp-items="Model.ClientList" class="form-control" id="Client">
+                            <option value="">Select client</option>
+                        </select>
+                        <span asp-validation-for="ClientId" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="ClientId" class="control-label mt-2"> Country </label>
+                        <select asp-for="TPNCountry" asp-items="Model.TPNCountryList" class="form-control" id="Country">
+                            <option value="">Select country</option>
+                        </select>
+                        <span asp-validation-for="TPNCountry" class="text-danger"></span>
+                    </div>
+
+                    <button class="btn btn-success mt-2" id="btnSubmit">Submit Request</button>
+                    <button class="btn btn-success  mt-2" id="btnCancel" type="reset">Cancel</button>
+                    <button class="btn btn-success  mt-2" id="btnBack" type="button" onclick="history.back()">Go Back</button>
+
+                </div>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+@section scripts
+{
+    <partial name="_ValidationScriptsPartial" />
+
+}

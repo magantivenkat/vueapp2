@@ -1,0 +1,38 @@
+﻿@using GoRegister.ApplicationCore.Domain.Settings.Services
+
+@inject GoRegister.ApplicationCore.Framework.ProjectTenant _project
+@inject IProjectSettingsAccessor settingsAccessor
+@inject GoRegister.ApplicationCore.Framework.MVC.GoRegisterPage _page;
+
+@{
+    var settings = await settingsAccessor.GetAsync();
+    var projectTheme = await settingsAccessor.GetTheme();
+}
+
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<title>@ViewData["Title"] - @settings.Name</title>
+
+<script>@Html.Raw(projectTheme.HeadScripts)</script>
+
+<!-- Bootstrap core CSS -->
+<link href="/assets/styles/client.min.css" rel="stylesheet" asp-append-version="true">
+
+@* Adding google fonts here *@
+@if (projectTheme.Fonts.Count > 0)
+{
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    foreach (var font in projectTheme.Fonts)
+    {        
+        <link href=@font.Link rel="stylesheet">
+    }
+}
+<!-- project css -->
+<link href="~/Theme/ThemeCss/@_project.Id" rel="stylesheet" id="gr-theme-css" />
+<link href="~/Theme/ThemeVariables/@_project.Id" rel="stylesheet" id="gr-theme-variables" />
+<!-- preview style tag -->
+<style id="preview-css">
+</style>

@@ -1,0 +1,56 @@
+﻿@using Microsoft.AspNetCore.Authorization
+@using GoRegister.Framework.Authorization
+@inject IAuthorizationService AuthorizationService
+
+<h1 class="pb-3">Admin</h1>
+
+<div class="row justify-content-around pb-4">
+    @if ((await AuthorizationService.AuthorizeAsync(User, Model, Policies.ManageGlobalThemes)).Succeeded)
+    {
+        <div class="col-3">
+            <h3 class="border-bottom"><i class="fas fa-paint-brush"></i> Templates</h3>
+            <a asp-action="Index" asp-controller="Templates">Templates</a><br />
+        </div> } @*@if ((await AuthorizationService.AuthorizeAsync(User, Model, Policies.ManageDomains)).Succeeded)
+        {
+            <div class="col-3">
+                <h3 class="border-bottom"><i class="fas fa-globe"></i> Domain settings</h3>
+                <a asp-action="Index" asp-controller="Domain">Domains</a><br />
+                <a asp-action="Create" asp-controller="Domain">Create Domain</a><br />
+            </div>
+        }*@
+
+    @if ((await AuthorizationService.AuthorizeAsync(User, Model, Policies.ManageUsers)).Succeeded)
+    {
+        <div class="col-3">
+            <h3 class="border-bottom"><i class="fas fa-users"></i> Users</h3>
+            <a asp-action="Index" asp-controller="Users" asp-area="Admin">Users</a><br />
+            <a asp-action="Create" asp-controller="Users" asp-area="Admin">Create User</a>
+        </div>}
+
+    @if ((await AuthorizationService.AuthorizeAsync(User, Model, Policies.ManageClients)).Succeeded)
+    {
+        <div class="col-3">
+            <h3 class="border-bottom"><i class="fas fa-briefcase"></i> Clients</h3>
+            <a asp-action="Index" asp-controller="Client">Clients</a><br />
+            @*<a asp-action="Create" asp-controller="Client">Create Client</a><br />*@
+            <a asp-action="TPNIndex" asp-controller="Client">TPN Client</a>
+        </div>}
+
+    @if ((await AuthorizationService.AuthorizeAsync(User, Model, Policies.ManageClients)).Succeeded)
+    {
+        <div class="col-3">
+            <h3 class="border-bottom"><i class="fas fa-briefcase"></i> Reports</h3>
+            <a asp-action="Index" asp-controller="TPNReport">TPN Reports</a><br />
+
+        </div>}
+</div>
+<div class="row">
+    @if ((await AuthorizationService.AuthorizeAsync(User, Model, Policies.ManageClients)).Succeeded)
+    {
+        <div class="col-3">
+            <h3 class="border-bottom"><i class="fas fa-briefcase"></i> On/Off MRF</h3>
+            <a asp-action="ManageMRF" asp-controller="projects">MRF Forms</a><br />
+        </div>
+    }
+    
+</div>

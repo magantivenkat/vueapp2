@@ -1,0 +1,29 @@
+﻿@model GoRegister.ApplicationCore.Domain.CustomPages.Models.CustomPageCreateEditModel
+
+@using GoRegister.ApplicationCore.Framework;
+@using GoRegister.ApplicationCore.Domain.ProjectThemes.Services;
+
+@inject ProjectTenant _tenant;
+@inject IProjectThemeService _projectThemeService;
+
+@{
+    // Loads page Layout specific to project
+    var tenant = _tenant.Id;
+
+    var layout = _projectThemeService.GetThemeLayoutByProjectId(_tenant.Id);
+
+    Layout = "~/Views/Shared/" + layout + ".cshtml";
+}
+
+<div id="content-wrapper" class="d-flex flex-column">
+    <div id="content">
+        <div class="row">
+            <div class="col-md-12">
+                @*@Html.Raw(Model.Content)*@
+                @(Model.Content)
+            </div>
+        </div>
+    </div>
+
+</div>
+

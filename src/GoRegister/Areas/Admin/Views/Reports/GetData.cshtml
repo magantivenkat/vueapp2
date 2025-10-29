@@ -1,0 +1,31 @@
+﻿@model GoRegister.ApplicationCore.Domain.Reports.Models.GeneratedReportViewModel
+@{
+    int count = Model.Table.Count();
+}
+
+<div>
+    <strong>Results: @count</strong>
+</div>
+<table class="table">
+    <thead>
+        <tr>
+            @foreach (var header in Model.Headers)
+            {
+                <th>@header</th>
+            }
+        </tr>
+    </thead>
+    @foreach (var row in Model.Table)
+    {
+        count++;
+        <tr>
+            @foreach (var col in row)
+            {
+                <td>
+                    @col
+                </td>
+            }
+
+        </tr>
+    }
+</table>

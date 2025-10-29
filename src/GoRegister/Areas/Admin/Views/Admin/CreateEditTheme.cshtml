@@ -1,0 +1,319 @@
+﻿@model GoRegister.ApplicationCore.Domain.ProjectThemes.Models.ProjectThemeModel
+<link href="/assets/vendor/codemirror/lib/codemirror.css" rel="stylesheet" />
+@*
+    Notes
+    - Need something to preview theme? NOT YET
+    - Name needs to be unique? YES
+    - upload fonts to default location? YES copy to project location too? NO how to know what font to copy?
+*@
+
+<div class="alert alert-success" role="alert" id="success-alert" style="display: none;">
+    <strong>The theme was successfully saved!</strong>
+</div>
+
+@Html.HiddenFor(m => m.ThemeGuid)
+@Html.HiddenFor(m => m.ThemeUniqueId)
+@Html.HiddenFor(m => m.LogoUrl)
+
+<form-proj asp-action="CreateEditTheme" asp-controller="Admin" autocomplete="off" enctype="multipart/form-data">
+
+    @if (Model.Id == 0)
+    {
+        <div class="d-flex justify-content-between align-items-center border-bottom">
+            <h1>Create Theme</h1>
+            <input type="submit" value="Create theme" class="btn btn-success" />
+        </div>
+    }
+    else
+    {
+        <div class="d-flex justify-content-between align-items-center border-bottom">
+
+            @if (Model.IsArchived == true)
+            {
+                <h1>Archived Theme</h1>
+            }
+            else
+            {
+                <h1>Edit Theme</h1>
+            }
+
+            <div>
+                @if (Model.IsArchived == false)
+                {
+                    <a class="btn btn-success" style="color: #ffffff; cursor: pointer" onClick="saveTheme()">Save Theme</a>
+                }
+                else
+                {
+
+                }
+                @Html.ActionLink("Preview", "PreviewTheme", "Admin", new { @Model.Id }, new { target = "_blank", @class = "btn btn-primary", @style = "color: #ffffff;" })
+                <a class="btn btn-info" style="color: #ffffff;" asp-controller="Admin" asp-action="ThemePreviousVersions" asp-route-id="@Model.ThemeGuid">Previous versions</a>
+
+            </div>
+        </div>
+    }
+    <div class="row justify-content-around">
+        <div class="col-5">
+            <div class="form-group">
+                <label asp-for="Name" class="control-label"></label>
+                @if (Model.Id == 0)
+                {
+                    <input asp-for="Name" class="form-control" />
+                }
+                else
+                {
+                    <input asp-for="Name" readonly class="form-control" />
+                }
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="LayoutName" class="control-label"></label>
+                <select asp-for="LayoutName" asp-items="Model.LayoutOptions" class="form-control"></select>
+                <span asp-validation-for="LayoutName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ClientId" class="control-label"></label>
+                <select asp-for="ClientId" asp-items="Model.ClientList" class="form-control">
+                    <option value="">-- Select Client --</option>
+                </select>
+                <span asp-validation-for="LayoutName" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="col-5">
+            <p><strong>Fonts</strong><br /> - needs location<br /> - licensing popup?<br />- list of existing fonts/prevent duplicate uploads font(1).woff font(2).woff issue<br />- upload function</p>
+        </div>
+    </div>
+
+    <div class="row justify-content-around">
+        <div class="col-11">
+            <h3 class="border-bottom pt-4">Upload Logo</h3>
+            <input type="file" name="file" id="imgUpload" class="form-control-file" asp-for="File" />
+            <br />
+            @if (Model.LogoUrl != string.Empty && Model.LogoUrl != null)
+            {
+                <img src=@Model.LogoUrl class="img-fluid" alt="Responsive image" width="200" height="200" />               
+            }
+        </div>
+    </div>
+
+    <div class="row justify-content-around">
+        <div class="col-11">
+            <h3 class="border-bottom pt-4">Header Html</h3>
+            <div class="from-group">
+                <textarea asp-for="HeaderHtml"></textarea>
+            </div>
+            <h3 class="border-bottom pt-4">Footer Html</h3>
+            <div>
+                <textarea asp-for="FooterHtml"></textarea>
+            </div>
+            <h3 class="border-bottom pt-4">Homepage Html</h3>
+            <div>
+                <textarea asp-for="HomepageHtml"></textarea>
+            </div>
+        </div>
+    </div>
+    <div class="row justify-content-around">
+        <div class="col-11">
+            <h3 class="border-bottom pt-4">Theme CSS</h3>
+            <div class="from-group">
+                <textarea asp-for="ThemeCss"></textarea>
+            </div>
+            <h3 class="border-bottom pt-4">Theme Settings</h3>
+            <div>
+                <textarea asp-for="ThemeVariableObject"></textarea>
+            </div>
+        </div>
+    </div>
+    <div class="row justify-content-around">
+        <div class="col-11">
+            <h3 class="border-bottom pt-4">Theme Header Scripts</h3>
+            <div class="from-group">
+                <textarea asp-for="HeadScripts"></textarea>
+            </div>
+            <h3 class="border-bottom pt-4">Theme Footer Scripts</h3>
+            <div>
+                <textarea asp-for="FooterScripts"></textarea>
+            </div>
+        </div>
+    </div>
+    @if (Model.Id == 0)
+    {
+        <div class="d-flex justify-content-end align-items-center border-top mt-3 pt-3 pb-3">
+            <input type="submit" value="Create theme" class="btn btn-success" />
+        </div>
+    }
+    else
+    {
+        <div class="d-flex justify-content-between align-items-center border-top mt-3 pt-3 pb-3">
+
+            <div>
+                @if (Model.IsArchived == false)
+                {
+                    <a class="btn btn-danger" style="color: #ffffff;" asp-controller="Admin" asp-action="ArchiveTheme" asp-route-id="@Model.ThemeGuid">Archive theme</a>
+                }
+                else
+                {
+                    <a class="btn btn-danger" style="color: #ffffff;" asp-controller="Admin" asp-action="UnarchiveTheme" asp-route-id="@Model.ThemeGuid">Unarchive theme</a>
+                }
+            </div>
+
+
+            <div class="justify-content-end">
+                @if (!Model.IsArchived)
+                {
+                    <a class="btn btn-success" style="color: #ffffff;" onClick="saveTheme()">Save Theme</a>
+                }
+                <a class="btn btn-info" style="color: #ffffff;" asp-controller="Admin" asp-action="ThemePreviousVersions" asp-route-id="@Model.ThemeGuid">Previous versions</a>
+            </div>
+        </div>
+    }
+
+</form-proj>
+
+@section scripts {
+    <script src="/assets/vendor/codemirror/lib/codemirror.js"></script>
+    <script src="/assets/vendor/codemirror/mode/css/css.js"></script>
+    <script src="/assets/vendor/tinymce_5.0.13/tinymce/js/tinymce/tinymce.min.js"></script>
+    <script src="/assets/vendor/tinymce_5.0.13/tinymce/js/tinymce/jquery.tinymce.min.js"></script>
+
+    <script>
+    var codemirrorThemeCss = CodeMirror.fromTextArea(document.getElementById("ThemeCss"),
+        {
+            lineNumbers: true,
+            mode: "css"
+        });
+
+    tinymce.init({
+        selector: '#HeaderHtml,#FooterHtml,#HomepageHtml',
+        plugins: 'code paste',
+        menubar: false,
+        paste_auto_cleanup_on_paste: true,
+        paste_remove_styles: true,
+        toolbar: 'undo redo | bold italic | alignleft aligncenter alignright alignjustify | code | template',
+        extended_valid_elements: 'script[language|type|src]'
+    });
+
+    var codemirrorThemeVariableObject = CodeMirror.fromTextArea(document.getElementById("ThemeVariableObject"), {
+        lineNumbers: true,
+        mode: "text"
+    });
+
+    var codemirrorThemeHeaderScripts = CodeMirror.fromTextArea(document.getElementById("HeadScripts"), {
+        lineNumbers: true,
+        mode: "javascript"
+    });
+
+    var codemirrorThemeFooterScripts = CodeMirror.fromTextArea(document.getElementById("FooterScripts"), {
+        lineNumbers: true,
+        mode: "javascript"
+    });
+
+    function saveTheme() {
+        var headerHtml = tinymce.get("HeaderHtml").getContent();
+        var footerHtml = tinymce.get("FooterHtml").getContent();
+        var homepageHtml = tinymce.get("HomepageHtml").getContent();
+        var themeCss = codemirrorThemeCss.getValue();
+        var variableObject = codemirrorThemeVariableObject.getValue();
+
+        var themeHeaderScripts = codemirrorThemeHeaderScripts.getValue();
+        var themeFooterScripts = codemirrorThemeFooterScripts.getValue();
+
+        var name = document.getElementById("Name").value;
+        var clientId = document.getElementById("ClientId").value;
+        var layoutName = document.getElementById("LayoutName").value;
+        var themeGuid = document.getElementById("ThemeGuid").value;
+
+        var themeUniqueId = document.getElementById("ThemeUniqueId").value;
+        var logoUrl = document.getElementById("LogoUrl").value;
+
+        var rootVariables = "";
+        var themeProperties = [];
+
+        //debugger;
+        if (variableObject !== "") {
+            themeProperties = JSON.parse(variableObject);
+        }
+
+        for (var i = 0; i < themeProperties.length; i++) {
+
+            for (var v = 0; v < themeProperties[i].Properties.length; v++) {
+
+                var property = themeProperties[i].Properties[v].VariableName;
+                var propertyValue = themeProperties[i].Properties[v].VariableValue;
+
+                rootVariables += (property + ": " + propertyValue + ";");
+
+            }
+        }
+
+        if (@Model.Id === 0) {
+            $.ajax({
+                type: "POST",
+                headers: {
+                    'RequestVerificationToken': document.querySelector('[name="__RequestVerificationToken"]').value
+                },
+                url: "/admin/Admin/CreateEditTheme",
+                data: {
+                    Name: name,
+                    LayoutName: layoutName,
+                    HeaderHtml: headerHtml,
+                    FooterHtml: footerHtml,
+                    HomepageHtml: homepageHtml,
+                    ThemeCss: themeCss,
+                    ThemeVariableObject: variableObject,
+                    ThemeVariables: rootVariables,
+                    ThemeGuid: themeGuid,
+                    HeadScripts: themeHeaderScripts,
+                    FooterScripts: themeFooterScripts,
+                    ClientId: clientId
+                },
+                success: function () {
+                    //notification to say theme has been saved
+                    $("#success-alert").fadeTo(2000, 500).slideUp(500, function() {
+                        $("#success-alert").slideUp(500);
+                    });
+                }
+            });
+        }
+        else {
+            // Create FormData object
+            var formData = new FormData();
+            var file = document.getElementById("imgUpload").files[0];
+
+            formData.append("Name", name);
+            formData.append("LayoutName", layoutName);
+            formData.append("HeaderHtml", headerHtml);
+            formData.append("FooterHtml", footerHtml);
+            formData.append("ThemeCss", themeCss);
+            formData.append("ThemeVariableObject", variableObject );
+            formData.append("ThemeVariables", rootVariables);
+            formData.append("ThemeGuid", themeGuid);
+            formData.append("HeadScripts", themeHeaderScripts);
+            formData.append("FooterScripts", themeFooterScripts);
+            formData.append("ClientId", clientId);
+            formData.append("LogoUrl", logoUrl);
+            formData.append("ThemeUniqueId", themeUniqueId);
+            formData.append("HomepageHtml", homepageHtml);
+
+            formData.append("file", file);
+
+            $.ajax({
+                type: "POST",
+                url: "/admin/Admin/PostTheme",
+                headers: {
+                    'RequestVerificationToken': document.querySelector('[name="__RequestVerificationToken"]').value
+                },
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (data) {
+                    //window.location.href = window.location.origin + window.location.pathname + "?id=" + data;
+                    window.location.href = data;
+                }
+            });
+        }
+    }
+
+    </script>
+
+}

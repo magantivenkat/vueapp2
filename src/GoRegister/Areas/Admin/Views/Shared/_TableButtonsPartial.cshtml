@@ -1,0 +1,9 @@
+﻿@model int
+
+<form asp-action="Delete" asp-route-id="@Model" data-ajax="true" data-ajax-success="deleteItem(this)" id="js-delete-form-@Model">
+    <a-proj asp-action="Edit" asp-route-id="@Model" class="btn btn-primary btn-sm">Edit</a-proj>
+    <a-proj asp-action="Details" asp-route-id="@Model" class="btn btn-info btn-sm">Details</a-proj>
+    <input type="submit" value="Delete" class="btn btn-danger btn-sm js-delete-action" title="Confirm Delete" />
+</form>
+
+

@@ -1,0 +1,25 @@
+﻿@model IEnumerable<GoRegister.ApplicationCore.Data.Models.DataQuery>
+
+<div class="float-right">
+    <a-proj asp-action="Create" class="btn btn-outline-primary">Create</a-proj>
+</div>
+<h1>Reports</h1>
+<div class="row">
+    @foreach (var report in Model)
+    {
+
+    <div class="col-4">
+        <div class="card border-left-primary shadow h-100 py-2">
+            <a-proj asp-action="Edit" asp-route-id="@report.Id">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">@report.Name</div>
+                        </div>
+                    </div>
+                </div>
+            </a-proj>
+        </div>
+    </div>
+    }
+</div>

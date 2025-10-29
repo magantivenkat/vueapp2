@@ -1,0 +1,67 @@
+﻿  @*MRF Changes : Remove is test checkbox, change page title
+    Modified Date : 30th September 2022
+    Modified By : Mandar.Khade @amexgbt.com
+    Team member : Harish.Rane @amexgbt.com
+    JIRA Ticket No : GoRegister/GOR-236*@   
+
+    @model GoRegister.ApplicationCore.Domain.Registration.Models.DelegateCreateModel
+
+    @using GoRegister.ApplicationCore.Framework
+    @using Microsoft.EntityFrameworkCore.Internal
+    @inject ProjectTenant project
+
+
+    @{
+        //ViewData["Title"] = "Create new attendee";
+        ViewData["Title"] = "Create new user";
+    }
+
+    <h1>@ViewData["Title"]</h1>
+    <hr />
+
+    <form-proj method="post" autocomplete="off">
+
+        <div asp-validation-summary="All" class="text-danger"></div>
+        <div class="form-group">
+            <label asp-for="FirstName"></label>
+            <input asp-for="FirstName" class="form-control" />
+            <span asp-validation-for="FirstName" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="LastName"></label>
+            <input asp-for="LastName" class="form-control" />
+            <span asp-validation-for="LastName" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="Email"></label>
+            <input asp-for="Email" class="form-control" />
+            <span asp-validation-for="Email" class="text-danger"></span>
+        </div>
+        @if (Model.HasMultipleRegistrationTypes)
+        {
+            <div class="form-group">
+                <label asp-for="RegistrationTypeId"></label>
+                <select asp-for="RegistrationTypeId" asp-items="Model.RegistrationTypeSelectList" class="form-control"></select>
+                <span asp-validation-for="RegistrationTypeId" class="text-danger"></span>
+            </div>
+        }
+        else
+        {
+            <input type="hidden" asp-for="RegistrationTypeId" value="@Model.RegistrationTypeId" />
+        }
+
+        @*<div class="form-check form-group">
+                <input class="form-check-input" asp-for="@Model.IsTest">
+                <label class="form-check-label" asp-for="@Model.IsTest">
+                </label>
+            </div>*@
+
+        <div class="form-group">
+            <partial name="_CreateAndBackToListButtonsPartial" />
+        </div>
+    </form-proj>
+
+    @section scripts
+{
+        <partial name="_ValidationScriptsPartial" />
+    }

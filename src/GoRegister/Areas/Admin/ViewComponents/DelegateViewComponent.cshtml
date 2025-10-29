@@ -1,0 +1,96 @@
+﻿    @*MRF Changes : Hide registration status dropdown, Share link functionality
+    Modified Date : 29th September 2022
+    Modified By : Mandar.Khade @amexgbt.com
+    Team member : Harish.Rame @amexgbt.com
+    JIRA Ticket No : GoRegister/GOR-234, GOR-236, GOR-242, GOR - 244 (Hide site link)*@
+
+    @model GoRegister.Areas.Admin.ViewComponents.DelegateViewComponent.ViewModel
+
+    @using GoRegister.ApplicationCore.Data.Enums
+    @using Microsoft.AspNetCore.Http.Extensions
+
+    @{
+        var regLinkText = "Invitation Link";
+        switch (Model.RegistrationStatus)
+        {
+            case RegistrationStatus.Confirmed:
+                regLinkText = "Confirmation Page Link";
+                break;
+        }
+    }
+
+    @* GOR-236
+    @if (Model.IsTest)
+    {
+        <div class="alert alert-warning">
+            You are currently viewing a test attendee
+        </div>
+    }*@
+
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <div class="float-right">
+                @*<a-proj asp-action="Manage" asp-route-id="@Model.Id" class="btn btn-outline-info">Manage</a-proj>
+        <a-proj asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-primary">Edit</a-proj>
+        <a-proj asp-action="Audit" asp-route-id="@Model.Id" class="btn btn-outline-info">View Audit</a-proj>*@
+                @*<a-proj asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-primary">Edit</a-proj>*@
+                <input type="button" value="Share MRF URL" id="shareLinkDelegate" hidden="@Model.PublishStatus" class="btn btn-outline-primary" />             
+
+
+            </div>
+            <h1>@Model.Name</h1>
+            @* Commented by Mandar Khade for MRF Requirement : GOR-234 Hide registration status dropdown *@
+            @*<button class="btn btn-success mb-2" data-toggle="modal" data-target="#registrationStatusModal">@Model.RegistrationStatus</button>*@
+            @*<p><strong>Site Link:</strong> <a href="@Model.SiteLink" target="_blank">@Model.SiteLink</a></p>*@
+            <p><strong>@regLinkText:</strong> <a href="@Model.InvitationLink" target="_blank">@Model.InvitationLink</a></p>
+            <div class="form-check">
+                @*<input class="form-check-input mb-2" type="checkbox" id="accepted-privacy-policy" disabled asp-for="AcceptedPrivacyPolicy" value="@Model.AcceptedPrivacyPolicy" title="Accepted Privacy Policy">*@
+                @*<label class="form-check-label" for="AcceptedPrivacyPolicy">
+                    Accepted Privacy Policy
+                </label>*@
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" tabindex="-1" role="dialog" id="registrationStatusModal">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Change status</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form-proj asp-action="ChangeRegistrationStatus" asp-route-returnUrl="@ViewContext.HttpContext.Request.GetDisplayUrl()" autocomplete="off">
+                        <input type="hidden" asp-for="Id" />
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" id="regstatus-NotInvited" asp-for="RegistrationStatus" value="@RegistrationStatus.NotInvited">
+                            <label class="form-check-label" for="regstatus-NotInvited">
+                                Not Invited
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" id="regstatus-Invited" asp-for="RegistrationStatus" value="@RegistrationStatus.Invited">
+                            <label class="form-check-label" for="regstatus-Invited">
+                                Invited
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" id="regstatus-Confirmed" asp-for="RegistrationStatus" value="@RegistrationStatus.Confirmed">
+                            <label class="form-check-label" for="regstatus-Confirmed">
+                                Confirmed
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" id="regstatus-Cancelled" asp-for="RegistrationStatus" value="@RegistrationStatus.Cancelled">
+                            <label class="form-check-label" for="regstatus-Cancelled">
+                                Cancelled
+                            </label>
+                        </div>
+                        <input type="submit" class="btn btn-primary" value="Submit" />
+                    </form-proj>
+                </div>
+            </div>
+        </div>
+    </div>

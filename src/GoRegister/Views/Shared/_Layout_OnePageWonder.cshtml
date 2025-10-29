@@ -1,0 +1,84 @@
+﻿@using GoRegister.ApplicationCore.Domain.Settings.Services
+@*@model GoRegister.ApplicationCore.Domain.ProjectTheme.Models.ProjectThemeModel*@
+
+@inject GoRegister.ApplicationCore.Framework.ProjectTenant _project
+@inject IProjectSettingsAccessor settingsAccessor
+
+@{
+    var settings = await settingsAccessor.GetAsync();
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <title></title>
+    <!-- Bootstrap core CSS -->
+    <link href="~/vendor/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom fonts for this template -->
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans&display=swap" rel="stylesheet">
+
+    <!-- Layout -->
+
+    @if (ViewBag.IsPreview != null)
+    {
+        <link href="~/Theme/PreviewThemeCss/@ViewBag.themeId" rel="stylesheet" />
+        <link href="~/Theme/PreviewOverrideCss/@ViewBag.themeId" rel="stylesheet" />
+        <link href="~/Theme/PreviewThemeVariables/@ViewBag.themeId" rel="stylesheet" />
+    }
+    else
+    {
+        <!-- Project -->
+        <link href="~/Theme/ThemeCss/@_project.Id" rel="stylesheet" />
+        <link href="~/Theme/OverrideCss/@_project.Id" rel="stylesheet" />
+        <link href="~/Theme/ThemeVariables/@_project.Id" rel="stylesheet" />
+    }
+
+    <style>
+        .bleed {
+            width: 100vw;
+            margin-left: 50%;
+            transform: translateX(-50%);
+        }
+    </style>
+
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom">
+        <div class="container">
+            <a class="navbar-brand" href="#">@settings.Name</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarResponsive">
+                <ul class="navbar-nav ml-auto">
+                    @foreach (var page in settings.CustomPages.Where(c => c.IsVisible).OrderBy(c => c.Position))
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link" href="/@(_project.Prefix)/@(page.Slug)">@(page.Title)</a>
+                        </li>
+                    }
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <main>
+        <div class="main-content container">
+            @RenderBody()
+        </div>
+    </main>
+
+
+    <!-- Footer -->
+    <!-- Bootstrap core JavaScript -->
+    <script src="~/vendor/jquery/dist/jquery.min.js"></script>
+    <script src="~/vendor/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    @RenderSection("scripts", required: false)
+    <script>
+
+    </script>
+</body>
+</html>

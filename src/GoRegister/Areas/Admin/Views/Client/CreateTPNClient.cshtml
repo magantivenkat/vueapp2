@@ -1,0 +1,111 @@
+﻿@model GoRegister.ApplicationCore.Domain.Clients.ClientModel
+
+<link href="/assets/vendor/codemirror/lib/codemirror.css" rel="stylesheet" />
+@{ string currentAction = ViewContext.RouteData.Values["Action"].ToString();
+    bool isEdit = currentAction.ToLower() == "edit" ? true : false; }
+
+<div asp-validation-summary="All" class="text-danger"></div>
+
+<div id="page-config" data-page="tpnclient-create-edit"></div>
+
+<div class="card">
+
+    <div class="card-header">
+        <h4>TPN Client: @Model.Name</h4>
+    </div>
+
+    <div class="card-body">
+        <form>
+            <input asp-for="Id" type="hidden" />
+            <input asp-for="DateCreated" type="hidden" />
+            <input asp-for="ClientUuid" type="hidden" />
+
+            <div class="row">
+                <div class="col-md-12">
+                    <a href="/admin/Client/TPNIndex/id" class="btn btn-primary float-left mb-2" id="btnback">Back to Client</a>
+                    <a href="/admin/Client/TPNEmailCreate?clientId=@Model.Id" class="btn btn-primary float-right mb-2" id="btnAdd">Add TPN Email</a>
+                </div>
+            </div>
+
+            <table id="tpntbl" class="table table-hover table-bordered">
+                <thead class="table-dark">
+                    <tr>
+                        <td>Country</td>
+                        <td>Email</td>
+                        <td>Edit</td>
+                        <td>Delete</td>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{ foreach (var TCCemail in Model.TPNCountryClientEmails)
+                        {
+            <tr data-emailId="@TCCemail.Id">
+                <td>@TCCemail.TPNCountry</td>
+                <td>@TCCemail.TPNEmail</td>
+
+                <td>  <a href="/admin/Client/TPNEmailEdit?emailId=@TCCemail.Id" class="btn btn-success">Edit Email</a>  </td>
+                <td>
+                    <button class="btn btn-success deleteBtn" type="button">Delete Email</button>
+
+                </td>
+
+            </tr> } }
+                    <tr class="@(Model.TPNCountryClientEmails.Count>0 ? Html.Raw("d-none") : Html.Raw("d-block"))">
+                        <td colspan="4">
+                            No records available
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="row">
+                <div class="col-md-12">
+                    <a href="/admin/Client/TPNCountryMapGA?clientId=@Model.Id" class="btn btn-primary float-right mb-2" id="btnMAP">MAP GA & TPN Country</a>
+                </div>
+            </div>
+
+            <table id="tpntblMapping" class="table table-hover table-bordered">
+                <thead class="table-dark">
+                    <tr>
+                        <td>Country</td>
+                        <td>Email</td>
+                        <td>Edit</td>
+                        <td>Delete</td>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{ foreach (var mapping in Model.TPNClientGAMappings)
+                        {
+                            <tr data-mappingId="@mapping.Id">
+                                <td>@mapping.TPNCountry</td>
+                                <td>@mapping.GAMEmail</td>
+
+                                <td>  <a href="/admin/Client/TPNClientGAMappingEdit?mappingId=@mapping.Id" class="btn btn-success">Edit</a>  </td>
+                                <td>
+                                    <button class="btn btn-success deleteBtnMapping" type="button">Delete</button>
+                                </td>
+
+                            </tr>
+ } }
+                    <tr class="@(Model.TPNClientGAMappings.Count>0 ? Html.Raw("d-none") : Html.Raw("d-block"))">
+                        <td colspan="4">
+                            No records available
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+        </form>
+
+        <br />
+
+    </div>
+</div>
+
+
+@section scripts
+{
+    <partial name="_ValidationScriptsPartial" />
+
+}
+

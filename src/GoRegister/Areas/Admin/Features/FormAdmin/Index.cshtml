@@ -1,0 +1,70 @@
+﻿@model GoRegister.Areas.Admin.Features.FormAdmin.GetForms.Result
+@inject GoRegister.ApplicationCore.Framework.ProjectTenant project
+
+
+<div id="page-config" data-page="form-admin"></div>
+
+<h1>Forms</h1>
+<div class="card mb-2">
+    <div class="card-body">
+        <a-proj asp-action="Edit" asp-route-id="@Model.RegistrationForm.Id" class="float-right btn btn-primary">Edit</a-proj>
+        <h3>MRF</h3>
+    </div>
+</div>
+@*<div class="card mb-2">
+    <div class="card-body">
+        @{if (Model.DeclineForm == null)
+            {
+                <form-proj asp-action="AddForm">
+                    <input type="hidden" name="formTypeId" value="1" />
+                    <button type="submit" class="float-right btn btn-primary">Add</button>
+                </form-proj>
+            }
+            else
+            {
+                <a-proj asp-action="Edit" asp-route-id="@Model.DeclineForm.Id" class="float-right btn btn-primary">Edit</a-proj>
+            }
+        }
+        <h3>Decline</h3>
+    </div>
+</div>*@
+@*<div class="card mb-2">
+    <div class="card-body">
+        @{if (Model.CancelForm == null)
+            {
+                <form-proj asp-action="AddForm">
+                    <input type="hidden" name="formTypeId" value="2" />
+                    <button type="submit" class="float-right btn btn-primary">Add</button>
+                </form-proj>
+            }
+            else
+            {
+                <a-proj asp-action="Edit" asp-route-id="@Model.CancelForm.Id" class="float-right btn btn-primary">Edit</a-proj>
+            }
+        }
+        <h3>Cancel</h3>
+    </div>
+</div>*@
+
+@*<h1 class="mt-3">Custom Forms</h1>
+<div id="custom-form-list">
+    @foreach (var form in Model.Forms)
+    {
+        <div class="card mb-2">
+            <div class="card-body">
+                <a-proj asp-action="Edit" asp-route-id="@form.Id" class="float-right btn btn-primary">Edit</a-proj>
+                <h3>@form.Name</h3>
+            </div>
+        </div>
+    }
+</div>
+
+<div class="card mb-2">
+    <div class="card-body">
+        <form-proj asp-action="AddForm">
+            <input type="hidden" name="formTypeId" value="3" />
+            <button type="submit" id="custom-form-button" disabled class="float-right btn btn-primary">Add</button>
+            <h3><input id="custom-form-name" name="displayName" class="border-0" autocomplete="off" placeholder="Create Custom Form" /></h3>
+        </form-proj>
+    </div>
+</div>*@

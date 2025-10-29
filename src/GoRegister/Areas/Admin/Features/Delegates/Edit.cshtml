@@ -1,0 +1,43 @@
+﻿@*MRF Changes : Hide delete button from Form Edit page
+    Modified Date : 18th October 2022
+    Modified By : Mandar.Khade@amexgbt.com
+    Team member : Harish.Rane@amexgbt.com
+    JIRA Ticket No : GoRegister/GOR-238-New
+
+      MRF Changes : Share Link functionality
+    Modified Date : 02nd Nov 2022
+    Modified By : Mandar.Khade@amexgbt.com
+    Team member : Harish.Rane@amexgbt.com
+    JIRA Ticket No : GoRegister/GOR-242
+*@
+
+@model GoRegister.ApplicationCore.Domain.Registration.FormModel
+
+
+@using Newtonsoft.Json;
+
+@{ var data = JsonConvert.SerializeObject(Model,
+                   new JsonSerializerSettings
+                   {
+                       ContractResolver = new Newtonsoft.Json.Serialization.CamelCasePropertyNamesContractResolver()
+                   }); }
+
+<vc:delegate user-id="Model.User.Id.Value" />
+
+@*<div id="page-config" data-page="delegates" data-userid="@Model.User.Id.Value" data-posturl="@Url.ProjectAction("Delete", "Delegates")" data-afterpostUrl="@Url.ProjectAction("Index", "Delegates", new { delegateDeleted = true })"></div>*@
+
+
+<div id="page-config" data-page="delegates" data-userid="@Model.User.Id.Value" data-posturl="@Url.ProjectAction("MRFShareLink", "Delegates")" data-afterpostUrl="@Url.ProjectAction("Index", "Delegates", new { delegateDeleted = true })"></div>
+
+
+<div id="delegates-app" data-model="@data"
+     data-submit-url="@Url.Action("Edit", "Delegates")">
+</div>
+
+
+<hr />
+
+<div id="delDelegate">
+    @*<input type="button" value="Share Link" id="shareLinkDelegate" class="btn btn-outline-danger" />*@
+    @*<input type="button" value="Delete" id="deleteDelegate" class="btn btn-outline-danger" />*@
+</div>

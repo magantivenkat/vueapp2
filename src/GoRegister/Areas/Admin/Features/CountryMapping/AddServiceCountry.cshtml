@@ -1,0 +1,197 @@
+﻿@using GoRegister.ApplicationCore.Domain.ServiceCountryMapping
+@model GoRegister.ApplicationCore.Domain.ServiceCountryMapping.ServiceCountryMappingModel;
+<div class="card">
+    <div class="card-header">
+        <h3>
+            Country Mapping 
+        </h3>
+        <span> Number of countries still left to be mapped: <label id="lblcount">@ViewBag.Countmap</label></span>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-4">
+                @using (Html.BeginForm())
+                {
+                    <div class="form-group">
+                        <label asp-for="@Model.ServiceCountry">Servicing Country</label>
+                        <select asp-for="@Model.ServiceCountryUuid" class="selectservcty form-control">
+                            <option selected value="0">~ choose ~</option>
+                            @if(ViewBag.ServiceCountryList != null)
+                            {
+                                foreach (var scty in ViewBag.ServiceCountryList)
+                                {
+                                    <option value="@scty.Value">@scty.Text</option>
+                                }
+                            }
+                        </select>
+                        <label id="smsg" class="text-danger">@ViewBag.Smessage</label>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="RequestCountry">Requestor Country</label>
+                        <select asp-for="RequestCountryId" class="auto-complete-select form-control" >
+                            @if (ViewBag.RequestCountryList != null)
+                            {
+                                foreach (var cty in ViewBag.RequestCountryList)
+                                {
+                                    <option value="@cty.Value">@cty.Text</option>
+                                }
+                            }
+                        </select>
+                        <label id="rmsg" class="text-danger">@ViewBag.Rmessage</label>
+                        <input type="hidden" id="rqct" asp-for="RequestCountry" />
+                        <input type="hidden" id="svct" asp-for="ServiceCountry" />
+                        <input type="hidden" id="rqctid" asp-for="RequestCountryId" />
+                        <input type="hidden" id="svctid" asp-for="ServiceCountryUuid" />
+                        <input type="hidden" id="addedit"  asp-for="AddEdit"/>
+                    </div>
+                    <div>
+                        <input class="btn btn-success mt-2" type="submit" value="Save" id="save" />
+
+                        <a class="btn btn-success mt-2" id="cancel" onclick="cancel()" hidden>Cancel</a>
+
+                    </div>
+
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3>
+            Mapped Countries
+        </h3>
+    </div>
+    <div class="card-body">
+        <table class="table table-hover table-bordered">
+            <thead class="table-dark">
+                <tr>
+                    <td style="width:20%">Service Country</td>
+                    <td style="width:60%">Requestor Country(s)</td>
+                    <td style="width:10%">Edit</td>
+                    <td style="width:10%">Delete</td>
+                </tr>
+            </thead>
+            <tbody>
+
+                @foreach (ServiceCountryMappingModel dt in ViewBag.ServiceCountryMappingList)
+                {
+                    <tr>
+                        <td style="width:20%">
+                            @dt.ServiceCountry
+                        </td>
+                        <td style="width:60%">
+                            @dt.RequestCountry
+                        </td>
+                        <td style="width:10%">
+                            <button id="edit" onclick="edit('@dt.ServiceCountryUuid')" class="btn btn-primary">Edit</button>
+                        </td>
+                        <td style="width:10%">
+                            <button id="deletemap" onclick="deletemap('@dt.ServiceCountryUuid',this)" class="btn btn-primary">Delete</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        
+                
+        $(document).ready(function () {
+         
+            $('.auto-complete-select').select2({
+                multiple: true,
+                placeholder: '~ choose ~',
+                allowClear: true
+            });
+            if ($('#smsg').text() == "" && $('#rmsg').text() == "") {
+                 $('#svctid').val("");
+                 $('#rqct').val("");
+                $("#addedit").val("Add");
+                $('.selectservcty').prop('disabled', false);
+            }else
+            {
+                if ($("#addedit").val() == "Edit") {
+                    $('.selectservcty').prop('disabled', true);
+                }
+            }
+            
+            if ($('#svctid').val() != null && $('#svctid').val() != "") {
+                $(".selectservcty").val($('#svctid').val());
+            } else {
+                $(".selectservcty").val("0");
+            }
+
+            if ($('#rqct').val() != null && $('#rqct').val() != "") {
+                var selectedValues = new Array();
+                selectedValues = $('#rqct').val().split(',').map(function (item) {
+                    return item.trim();
+                });
+                $(".auto-complete-select").val(selectedValues).trigger('change');
+            } else {
+                $(".auto-complete-select").val(null).trigger('change');
+            }
+        });
+        $(function () {
+            $("#save").click(function () {
+                var dt = $('.auto-complete-select').val();
+                $("#rqct").val(dt);
+                var serv = $('.selectservcty option:selected').text();
+                $('#svct').val(serv);
+                $('.selectservcty').prop('disabled', false);
+            });
+        });
+        function edit(id) {
+            var url = '/admin/project/' + @ViewBag.ProjectId+'/CountryMapping/Edit'
+            $.ajax({
+                url: url,
+                data: { ServiceCountryUuid: id },
+                type: 'GET',
+                datatype: 'json',
+                success: function (r) {
+                    $(".selectservcty").val(r.serviceCountryUuid);
+                    $('.selectservcty').prop('disabled', true);
+                    var selectedValues = new Array();
+                    selectedValues = r.requestCountry.split(',').map(function (item) {
+                        return item.trim();
+                    });
+                    $(".auto-complete-select").val(selectedValues).trigger('change');
+                    $("#cancel").attr("hidden", false);     
+                    $("#addedit").val("Edit");
+                },
+                error: function (e) {
+                    alert(e);
+                },
+            });
+        }
+        function cancel() {
+            $('.selectservcty').prop('disabled', false);
+            $(".selectservcty").val("0");
+            $(".auto-complete-select").val(null).trigger('change');
+            $("#cancel").attr("hidden", true);
+            $("#addedit").val("Add");
+        }
+        function deletemap(id, e) {
+            var url = '/admin/project/' + @ViewBag.ProjectId+'/CountryMapping/Delete'
+            $.ajax({
+                url: url,
+                data: { ServiceCountryUuid: id },
+                type: 'GET',
+                datatype: 'json',
+                success: function (r) {
+                    $(e).closest('tr').remove();
+                    $("#lblcount").text(r);
+                },
+                error: function (e) {
+                    alert(e);
+                },
+            });
+        }
+    </script>
+}
+

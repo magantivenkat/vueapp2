@@ -1,0 +1,24 @@
+﻿@model GoRegister.ApplicationCore.Domain.Menus.Models.BuildMenuViewModel
+
+@{ 
+    var path = this.Context.Request.Path;
+}
+
+<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+</button>
+<div class="collapse navbar-collapse" id="navbarResponsive">
+    <ul class="navbar-nav ml-auto">
+        @foreach (var link in Model.Links)
+        {
+            var target = link.OpenInNewTab ? "target='_blank'" : "";
+            var isActive = path.Value == link.Link ? "active" : "";
+
+            <li class="nav-item @isActive">
+                <a class="nav-link gr-nav-link @link.CssClass" href="@link.Link" @(target)>
+                    @link.Label
+                </a>
+            </li>
+        }
+    </ul>
+</div>

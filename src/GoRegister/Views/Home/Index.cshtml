@@ -1,0 +1,19 @@
+﻿@model string
+
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+@if (!string.IsNullOrEmpty(Model))
+{
+    @*@Html.Raw(Model)*@
+     @(Model)
+}
+else
+{
+    <div class="text-center">
+        <h1 class="display-4">Welcome to your new registration site</h1>
+        <p>Get started by adding a reg form and creating a custom home page</p>
+    </div>
+}
+

@@ -1,0 +1,32 @@
+﻿@*MRF Changes : Change redirection page on Go Home functionality
+    Modified Date : 22nd September 2022
+    Modified By : Mandar.Khade@amexgbt.com
+    Team member : Harish.Rame@amexgbt.com
+    JIRA Ticket No : GoRegister/GOR-221    *@
+
+@{Layout = null;}
+
+@{
+    ViewBag.Title = "Error Page";
+}
+
+<div class="row">
+    <span class="label label-warning">@ViewBag.ErrorDescription</span>
+</div>
+
+<div class="row">
+    <span class="label label-warning">@ViewBag.ErrorPath</span>
+</div>
+
+<div class="row text-center">
+    <img src="/assets/images/SomeThingWentWrong.jpg" class="img-responsive rounded" />
+</div>
+<div class="row text-center">
+    @*<a class="btn btn-default" href="~/admin/projects"> Go Home</a>*@
+
+    <a class="btn btn-default" href="~/admin/requests"> Go Home</a>
+</div>
+
+
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+      integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous" />

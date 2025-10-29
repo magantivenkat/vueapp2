@@ -1,0 +1,38 @@
+﻿@using GoRegister.Areas.Admin.Extensions
+@model IEnumerable<GoRegister.ApplicationCore.Domain.CustomPages.Models.CustomPageVersionModel>
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="table-responsive">
+                <table class="table">
+                    <tbody>
+                        <tr>
+                            <th>Version content</th>
+                            <th></th>
+                            <th>Version was changed</th>
+                            <th></th>
+                        </tr>
+                        @foreach (var customPageVersion in Model)
+                        {
+                            <tr>
+                                <td class="col-md-7">
+                                    <a asp-action="PreviewVersionPage" asp-route-id="@customPageVersion.Id" class="btn btn-info btn-sm" target="_blank">Preview</a>
+                                </td>
+                                <td class="col-md-1">&nbsp;</td>
+                                <td class="col-md-2">
+                                    <label id="customPageTooltip" data-toggle="tooltip" data-placement="left" title="@customPageVersion.ToolTipAuditInfo"> @customPageVersion.HumanizedDateSent</label>
+                                </td>
+                                <td class="col-md-2 text-right">
+                                    <form method="post" asp-controller="Pages" asp-action="RevertToPreviousVersion" asp-route-id="@customPageVersion.Id">
+                                        <button class="btn btn-success btn-sm align-right" type="submit">Revert to this version</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

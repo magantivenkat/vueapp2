@@ -1,0 +1,76 @@
+﻿@model GoRegister.ApplicationCore.Domain.Clients.TPNCountryClientEmailModel
+<link href="/assets/vendor/codemirror/lib/codemirror.css" rel="stylesheet" />
+@{ string currentAction = ViewContext.RouteData.Values["Action"].ToString(); }
+
+@{    
+    string action = "";
+
+    if(currentAction== "TPNEmailCreate")
+    {
+        action = "Create";
+       
+    }
+    else
+    {
+        action = "Edit";
+        
+    }
+}
+
+<div asp-validation-summary="All" class="text-danger"></div>
+
+<div id="page-config" data-page="tpnclientemail-create-edit"></div>
+
+<div class="card">
+
+    <div class="card-header">
+        <h3>@action TPN Country Client Email</h3>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-4">
+                <form id="AddTPNClientEmailForm">
+                    <input asp-for="Id" type="hidden" />
+                    <input asp-for="ClientId" type="hidden" />
+                    <input asp-for="ClientUuid" type="hidden" />
+                    <input asp-for="FormAction" type="hidden" />
+
+                    <div class="form-group">
+                        <label asp-for="TPNCountry" class="control-label"> TPN Country </label>
+                        <select asp-for="TPNCountry" asp-items="Model.TPNCountryList" class="form-control" id="TPNCountry">
+                            <option value="">Select a TPN Country</option>
+                        </select>
+                        <span asp-validation-for="TPNCountry" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="TPNEmail" class="control-label"> TPN Email </label>
+                        <input asp-for="TPNEmail" class="form-control" placeholder="TPN Country Client Email" />
+                        <span asp-validation-for="TPNEmail" class="text-danger"></span>
+                    </div>
+
+                    <div id="divtpnEmailExist" class="row d-none">
+                        <div class="col-md-12 d-flex justify-content-center">
+                            <div class="alert alert-danger" role="alert">
+                                Email already exists. Please try adding different email.
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-success mt-2" type="submit">Save TPN Email</button>
+                    <button class="btn btn-success  mt-2" id="AddTPNClientEmailCancelButton" type="reset">Cancel</button>
+                    <button class="btn btn-success  mt-2" id="AddTPNClientEmailBackButton" type="button" onclick="history.back()">Go Back</button>
+                </form>
+            </div>
+        </div>
+
+    </div>
+</div>   
+
+
+    @section scripts
+    {
+        <partial name="_ValidationScriptsPartial" />
+
+    }
+

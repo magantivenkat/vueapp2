@@ -1,0 +1,77 @@
+﻿@model GoRegister.ApplicationCore.Domain.AdminUsers.AdminUserCreateEditModel
+
+@{
+    var isNew = Model.Id == 0;
+}
+
+<div id="page-config" data-page="users-create-edit"></div>
+
+
+@* Breadcrumb changes commented for now *@
+@*@if (isNew)
+    {
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a asp-controller="Projects" asp-action="Index">Home</a></li>
+                <li class="breadcrumb-item"><a asp-controller="Users" asp-action="Index">Users</a></li>
+                <li class="breadcrumb-item active" aria-current="AddUser">Add User</li>
+            </ol>
+        </nav>
+    }
+
+    @if (!isNew)
+    {
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a asp-controller="Projects" asp-action="Index">Home</a></li>
+                <li class="breadcrumb-item"><a asp-controller="Users" asp-action="Index">Users</a></li>
+                <li class="breadcrumb-item active" aria-current="EditUser">Edit User</li>
+            </ol>
+        </nav>
+    }*@
+
+<form asp-area="Admin">
+    @Html.HiddenFor(e => e.Id)
+
+    <div asp-validation-summary="All" class="text-danger"></div>
+    <div class="form-group">
+        <label asp-for="FirstName"></label>
+        <input asp-for="FirstName" class="form-control" />
+        <span asp-validation-for="FirstName" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="LastName"></label>
+        <input asp-for="LastName" class="form-control" />
+        <span asp-validation-for="LastName" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="Email"></label>
+        <input asp-for="Email" class="form-control" />
+        <span asp-validation-for="Email" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="TimeZone" class="control-label"></label>
+        <select asp-for="TimeZone" asp-items="Model.TimeZones" class="form-control"></select>
+        <span asp-validation-for="TimeZone" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="DateFormat" class="control-label"></label>
+        <select asp-for="DateFormat" asp-items="Model.DateFormats" class="form-control"></select>
+        <span asp-validation-for="DateFormat" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Roles1" class="control-label"></label> <help-text>Okay</help-text>
+        <div class="input-group">
+            <select asp-for="Roles1" asp-items="Model.SelectRoles" class="form-control">
+                <option></option>
+            </select>
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Save</button>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />    
+}

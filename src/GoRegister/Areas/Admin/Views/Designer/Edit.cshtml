@@ -1,0 +1,188 @@
+﻿@model GoRegister.Areas.Admin.ViewModels.CustomPageEditorViewModel
+
+
+    <div class="form-group">
+        <label>Title</label>
+        <input asp-for="Title" type="text" class="form-control" autofocus />
+    </div>
+    <div class="form-group">
+        <label>Slug</label>
+        <input asp-for="Slug" type="text" class="form-control" />
+    </div>
+
+    <div id="elemental">
+        <div v-for="block in document.blocks">
+            <div class="card" v-on:click="editBlock(block.id)">
+                <h5>{{ block.title }} - {{ block.type }}</h5>
+            </div>
+        </div>
+        <div>
+            <button v-on:click="addBlock('hero')" class="btn btn-primary">Add Hero</button>
+            <button v-on:click="addBlock('mainsection')" class="btn btn-primary">Add Main Section</button>
+        </div>
+
+        <div class="modal fade" id="editBlockModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close" v-on:click="closeEditor"><span aria-hidden="true">&times;</span></button>
+                        @*<h4 class="modal-title">Edit Block</h4>*@
+                    </div>
+                    <div class="form" v-if="editingBlock">
+                        <div class="modal-body">
+                            <component v-bind:is="editingBlock.editor" :block="editingBlock"></component>
+
+                            <div class="form-group">
+                                <button v-on:click="save" class="btn btn-primary">Save</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+<script type="text/x-template" id="hero-edit-template">
+    <div>
+        <div class="form-group">
+            <label>Title</label>
+            <input v-model="block.title" type="text" class="form-control" autofocus />
+        </div>
+        <div class="form-group">
+            <label>Subtitle</label>
+            <input v-model="block.subTitle" type="text" class="form-control" />
+        </div>
+    </div>
+</script>
+
+<script type="text/x-template" id="mainsection-edit-template">
+    <div>
+        <div class="form-group">
+            <label>Title</label>
+            <input v-model="block.title" type="text" class="form-control" autofocus />
+        </div>
+        <div class="form-group">
+            <label>Text</label>
+            <textarea v-model="block.text" rows="10" class="form-control"></textarea>
+        </div>
+        <div class="form-group">
+            <label>Image Url</label>
+            <input v-model="block.imageUrl" type="text" class="form-control" />
+        </div>
+        <div class="form-group">
+            <label>Image On Left</label>
+            <input v-model="block.left" type="checkbox" class="form-control" />
+        </div>
+    </div>
+</script>
+
+@section Scripts {
+    <script src="/assets/vendor/vue/vue.js"></script>
+
+    <script type="text/javascript">
+        var store = new Vue({
+            data: {
+                document: {
+                    blocks: []
+                },
+                blocks: []
+            }
+        })
+
+        var vm = new Vue({
+            el: '#elemental',
+            data: {
+                document: {
+                    blocks: []
+                },
+                isEditorOpen: false,
+                editingBlock: null
+            },
+            methods: {
+                addBlock: function (type) {
+                    var block;
+
+                    console.log(type)
+
+                    switch (type) {
+                        case "hero":
+                            block = newHeroBlock();
+                            break;
+                        case "mainsection":
+                            block = newMainSectionBlock();
+                            break;
+                        default:
+                            alert("block not found");
+                            return;
+                    }
+
+                    block.id = generateUUID();
+                    block.title = "";
+                    block.type = type;
+
+                    this.document.blocks.push(block);
+                },
+                editBlock(id) {
+                    console.log(id)
+                    this.editingBlock = this.document.blocks.find(e => e.id === id)
+                    console.log(this.editingBlock)
+                    $("#editBlockModal").modal('show');
+                },
+                save() {
+                    //store.document.blocks.find(e => e.id === edit)
+                    this.closeEditor();
+                },
+                closeEditor() {
+                    this.editingBlock = null;
+                    $("#editBlockModal").modal('hide');
+                }
+            }
+        })
+
+        Vue.component('editor-hero', {
+            template: '#hero-edit-template',
+            props: ['block'],
+            data: function () {
+                return {}
+            }
+        })
+
+        Vue.component('editor-mainsection', {
+            template: '#mainsection-edit-template',
+            props: ['block'],
+            data: function () {
+                return {}
+            }
+        })
+
+        function newHeroBlock() {
+            return {
+                editor: 'editor-hero'
+
+            }
+        }
+
+        function newMainSectionBlock() {
+            return {
+                editor: 'editor-mainsection',
+                left: false,
+                imageUrl: "",
+                text: ""
+            }
+        }
+
+        function generateUUID() { // Public Domain/MIT
+            var d = new Date().getTime();
+            if (typeof performance !== 'undefined' && typeof performance.now === 'function') {
+                d += performance.now(); //use high-precision timer if available
+            }
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+                var r = (d + Math.random() * 16) % 16 | 0;
+                d = Math.floor(d / 16);
+                return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+            });
+        }
+    </script>
+}

@@ -1,0 +1,8 @@
+﻿@model GoRegister.Areas.Admin.ViewModels.ThemeDetailViewModel
+
+
+<a-proj class="btn btn-primary" asp-action="Activate" asp-controller="Themes" asp-area="Admin" asp-route-theme="@Model.Theme">Set Current</a-proj>
+<div class="">
+    @*@Html.Raw(Model.Content)*@
+    @(Model.Content)
+</div>

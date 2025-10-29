@@ -1,0 +1,104 @@
+﻿@model GoRegister.Areas.Admin.Features.RegistrationPaths.Edit.Command
+
+@{
+    ViewData["Title"] = "Edit";
+}
+
+<div id="page-config" data-page="regpath-edit"></div>
+
+<h4>Registration Path</h4>
+<hr />
+<div class="row">
+    <div class="col-md-8">
+        <form-proj method="post" autocomplete="off">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="Id" />
+            <div class="form-group form-check">
+                <label class="form-check-label">
+                    <input class="form-check-input" v-model="isActive" asp-for="IsActive" /> @Html.DisplayNameFor(model => model.IsActive)
+                </label>
+            </div>
+            <div class="form-group">
+                <label asp-for="Name" class="control-label"></label>
+                <input asp-for="Name" v-model="name" class="form-control" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Description" class="control-label"></label>
+                <input asp-for="Description" v-model="description" class="form-control" />
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="DateRegistrationFrom" class="control-label"></label>
+                <input asp-for="DateRegistrationFrom" v-model="dateRegistrationFrom" class="form-control" />
+                <span asp-validation-for="DateRegistrationFrom" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="DateRegistrationTo" class="control-label"></label>
+                <input asp-for="DateRegistrationTo" v-model="dateRegistrationTo" class="form-control" />
+                <span asp-validation-for="DateRegistrationTo" class="text-danger"></span>
+            </div>
+            <div class="form-group form-check">
+                <label class="form-check-label">
+                    <input class="form-check-input" v-model="canCancel" asp-for="CanCancel" /> @Html.DisplayNameFor(model => model.CanCancel)
+                </label>
+            </div>
+            <div class="form-group" v-show="canCancel">
+                <label asp-for="DateCancelTo" class="control-label"></label>
+                <input asp-for="DateCancelTo" v-model="dateCancelTo" class="form-control" />
+                <span asp-validation-for="DateCancelTo" class="text-danger"></span>
+            </div>
+            <div class="form-group form-check">
+                <label class="form-check-label">
+                    <input class="form-check-input" v-model="canModify" asp-for="CanModify" /> @Html.DisplayNameFor(model => model.CanModify)
+                </label>
+            </div>
+            <div class="form-group" v-show="canModify">
+                <label asp-for="DateModifyTo" class="control-label"></label>
+                <input asp-for="DateModifyTo" v-model="dateModifyTo" class="form-control" />
+                <span asp-validation-for="DateModifyTo" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="NotInvitedText" class="control-label"></label>
+                <textarea asp-for="NotInvitedText" class="js-html-editor"></textarea>
+                <span asp-validation-for="NotInvitedText" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="InvitedText" class="control-label"></label>
+                <textarea asp-for="InvitedText" v-pre class="js-html-editor"></textarea>
+                <span asp-validation-for="InvitedText" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ConfirmedText" class="control-label"></label>
+                <textarea asp-for="ConfirmedText" v-pre class="js-html-editor"></textarea>
+                <span asp-validation-for="ConfirmedText" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="DeclinedText" class="control-label"></label>
+                <textarea asp-for="DeclinedText" v-pre class="js-html-editor"></textarea>
+                <span asp-validation-for="DeclinedText" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="CancelledText" class="control-label"></label>
+                <textarea asp-for="CancelledText" v-pre class="js-html-editor"></textarea>
+                <span asp-validation-for="CancelledText" class="text-danger"></span>
+            </div>
+            @*<div class="form-group">
+                    <label asp-for="WaitingText" class="control-label"></label>
+                    <textarea asp-for="WaitingText" class="js-html-editor"></textarea>
+                    <span asp-validation-for="WaitingText" class="text-danger"></span>
+                </div>*@
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form-proj>
+    </div>
+</div>
+
+<div>
+    <a-proj asp-action="Index">Back to List</a-proj>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

@@ -1,0 +1,27 @@
+﻿@model List<GoRegister.ApplicationCore.Domain.Registration.Models.EmailAuditNotificationModel>
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="table-responsive">
+                <table class="table">
+                    <tbody>
+                        <tr>
+                            <th>Type</th>
+                            <th>Email</th>
+                            <th>Time</th>
+                        </tr>
+                        @foreach (var notification in Model)
+                        {
+                            <tr>
+                                <td class="col-3">@notification.EventType</td>
+                                <td class="col-5">@notification.Email</td>
+                                <td class="col-3">@notification.Timestamp</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

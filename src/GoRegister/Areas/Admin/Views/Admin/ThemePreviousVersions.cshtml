@@ -1,0 +1,41 @@
+﻿@model IEnumerable<GoRegister.ApplicationCore.Domain.ProjectThemes.Models.ProjectThemeListItemModel>
+@{
+    ViewData["Title"] = "ThemePreviousVersion";
+}
+
+<h1>Previous Versions</h1>
+
+<div>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>
+                    Theme Name
+                </th>
+                <th>
+                    Date Saved
+                </th>
+                <th>
+                    
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+            <tr>
+                <td>
+                    @item.Name
+                </td>
+                <td>
+                    @item.DateUpdated
+                </td>
+                <td>
+                    <a asp-action="EditThemeId" asp-route-id="@item.Id">Edit</a> | @Html.ActionLink("Preview", "PreviewTheme", "Admin", new { @item.Id }, new { target = "_blank" })
+                </td>
+            </tr>
+            }
+        </tbody>
+    </table>
+</div>
+

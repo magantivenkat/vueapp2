@@ -1,0 +1,84 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.11.35312.102
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GoRegister", "src\GoRegister\GoRegister.csproj", "{BF204891-C849-4BB9-A613-2F663FD7CBBD}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{DEB6F967-C2E6-4C2F-A1F2-487FA8F7D0E9}"
+	ProjectSection(SolutionItems) = preProject
+		package.json = package.json
+	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GoRegister.HangfireRunner", "src\GoRegister.HangfireRunner\GoRegister.HangfireRunner.csproj", "{1B9A554E-6C0E-4A36-B146-8A00DF077FE4}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GoRegister.ApplicationCore", "src\GoRegister.ApplicationCore\GoRegister.ApplicationCore.csproj", "{97C90416-9237-40A1-BA0F-CBB55194E1CF}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GoRegister.Migrations", "src\GoRegister.Migrations\GoRegister.Migrations.csproj", "{A3BA60E8-C38D-4D38-A061-876D07CB86DD}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{D8468B2D-5143-455B-9563-E488A0CD8A17}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GoRegister.BuildTests", "tests\GoRegister.BuildTests\GoRegister.BuildTests.csproj", "{E15A8B0A-2515-43B6-8FA9-CF05E83E662C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{825CCE55-7A01-4B50-BEF9-CF29506A43D6}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GoRegister.ApplicationCore.BuildTests", "GoRegister.ApplicationCore.BuildTests\GoRegister.ApplicationCore.BuildTests.csproj", "{36484687-13F7-4AA5-9EB9-1FAFEE8E2B6A}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GoRegister.TestingCore", "GoRegister.TestingCore\GoRegister.TestingCore.csproj", "{632354CE-7CC7-45A8-910A-B246C651EF96}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GoRegister.MRFAPI", "GoRegister.MRFAPI\GoRegister.MRFAPI.csproj", "{21719F7B-D1BE-4C34-B0E9-90DBCA553740}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BF204891-C849-4BB9-A613-2F663FD7CBBD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BF204891-C849-4BB9-A613-2F663FD7CBBD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BF204891-C849-4BB9-A613-2F663FD7CBBD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BF204891-C849-4BB9-A613-2F663FD7CBBD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1B9A554E-6C0E-4A36-B146-8A00DF077FE4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1B9A554E-6C0E-4A36-B146-8A00DF077FE4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1B9A554E-6C0E-4A36-B146-8A00DF077FE4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1B9A554E-6C0E-4A36-B146-8A00DF077FE4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{97C90416-9237-40A1-BA0F-CBB55194E1CF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{97C90416-9237-40A1-BA0F-CBB55194E1CF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{97C90416-9237-40A1-BA0F-CBB55194E1CF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{97C90416-9237-40A1-BA0F-CBB55194E1CF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A3BA60E8-C38D-4D38-A061-876D07CB86DD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A3BA60E8-C38D-4D38-A061-876D07CB86DD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A3BA60E8-C38D-4D38-A061-876D07CB86DD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A3BA60E8-C38D-4D38-A061-876D07CB86DD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E15A8B0A-2515-43B6-8FA9-CF05E83E662C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E15A8B0A-2515-43B6-8FA9-CF05E83E662C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E15A8B0A-2515-43B6-8FA9-CF05E83E662C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E15A8B0A-2515-43B6-8FA9-CF05E83E662C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{36484687-13F7-4AA5-9EB9-1FAFEE8E2B6A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{36484687-13F7-4AA5-9EB9-1FAFEE8E2B6A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{36484687-13F7-4AA5-9EB9-1FAFEE8E2B6A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{36484687-13F7-4AA5-9EB9-1FAFEE8E2B6A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{632354CE-7CC7-45A8-910A-B246C651EF96}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{632354CE-7CC7-45A8-910A-B246C651EF96}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{632354CE-7CC7-45A8-910A-B246C651EF96}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{632354CE-7CC7-45A8-910A-B246C651EF96}.Release|Any CPU.Build.0 = Release|Any CPU
+		{21719F7B-D1BE-4C34-B0E9-90DBCA553740}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{21719F7B-D1BE-4C34-B0E9-90DBCA553740}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{21719F7B-D1BE-4C34-B0E9-90DBCA553740}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{21719F7B-D1BE-4C34-B0E9-90DBCA553740}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{BF204891-C849-4BB9-A613-2F663FD7CBBD} = {825CCE55-7A01-4B50-BEF9-CF29506A43D6}
+		{1B9A554E-6C0E-4A36-B146-8A00DF077FE4} = {825CCE55-7A01-4B50-BEF9-CF29506A43D6}
+		{97C90416-9237-40A1-BA0F-CBB55194E1CF} = {825CCE55-7A01-4B50-BEF9-CF29506A43D6}
+		{A3BA60E8-C38D-4D38-A061-876D07CB86DD} = {825CCE55-7A01-4B50-BEF9-CF29506A43D6}
+		{E15A8B0A-2515-43B6-8FA9-CF05E83E662C} = {D8468B2D-5143-455B-9563-E488A0CD8A17}
+		{36484687-13F7-4AA5-9EB9-1FAFEE8E2B6A} = {D8468B2D-5143-455B-9563-E488A0CD8A17}
+		{632354CE-7CC7-45A8-910A-B246C651EF96} = {D8468B2D-5143-455B-9563-E488A0CD8A17}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {659EB870-4905-44DB-AA1F-00B79E2D778B}
+	EndGlobalSection
+EndGlobal

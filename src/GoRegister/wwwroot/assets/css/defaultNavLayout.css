@@ -1,0 +1,60 @@
+﻿/*
+    CSS specific for default navigation layout
+*/
+
+* {
+    box-sizing: border-box;
+}
+
+html, body {
+    height: 100%;
+}
+
+body {
+    font-family: 'Open Sans', Arial, Helvetica, sans-serif;
+    font-size: 16px;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+header {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    background-color: var(--header-area-background);
+    align-items: center;
+}
+
+.nav-container {
+    display: flex;
+    width: 100%;
+    max-width: var(--header-area-width);
+}
+
+.navigation-link {
+    padding: 20px !important;
+}
+
+nav {
+    list-style-type: none;
+    display: flex;
+    margin: 0;
+    padding: 0;
+    /*flex-direction: var(--navigation-direction-nav);
+    width: var(--navigation-direction-navWidth);*/
+    background: var(--background-color-navBar);
+    overflow-y: hidden;
+}
+
+    nav .show {
+        display: flex;
+    }
+
+main {
+    flex: 1 0 auto;
+}
+
+.header-content {
+    width: 100%;
+}

@@ -1,0 +1,163 @@
+﻿@using GoRegister.ApplicationCore.Data.Enums
+@using GoRegister.ApplicationCore.Framework
+@inject ProjectTenant project
+
+@model GoRegister.ApplicationCore.Domain.CustomPages.Models.CustomPageCreateEditModel
+
+@{
+    ViewData["Title"] = "Create";
+}
+
+<div id="page-config"
+     data-page="custompages-edit"
+     data-id="@Model.Id"></div>
+
+@if (Model.Id == 0)
+{
+    <div class="d-flex justify-content-between align-items-center">
+        <h1>Create Custom Page</h1>
+    </div>
+}
+else
+{
+    <div class="d-flex justify-content-between align-items-center">
+        <div class="float-left">
+            <h1>Edit Custom Page</h1>
+        </div>
+        <div class="float-right">
+            <form-proj asp-action="Delete" asp-route-id="@Model.Id" class="d-inline" id="js-delete-form-@Model.Id">
+                <input type="submit" value="Delete" class="btn btn-danger js-delete-action" title="Confirm Delete" />
+            </form-proj>
+            <a href="#" data-target="#audit-modal-container" data-toggle="modal" id="@Model.Id" class="btn btn-info">Audits</a>
+            <a href="#" data-target="#version-modal-container" data-toggle="modal" id="@Model.Id" class="btn btn-primary">Versions</a>
+            <a-proj asp-action="PreviewPage" asp-route-id="@Model.Id" class="btn btn-info" target="_blank">Preview</a-proj>
+        </div>
+    </div>
+}
+
+<form-proj asp-action="CreateEdit" autocomplete="off">
+    @Html.HiddenFor(model => model.Id)
+    @Html.HiddenFor(model => model.ProjectPageId)
+    @Html.HiddenFor(model => model.Position)
+    @Html.HiddenFor(model => model.PageType)
+
+    <div class="form-group form-check">
+        <input type="checkbox" class="form-check-input" asp-for="IsVisible">
+        <label class="form-check-label" asp-for="IsVisible"></label>
+    </div>
+
+    @if (Model.PageType != PageType.HomePage)
+    {
+        @if (Model.HasMultipleRegistrationTypes)
+        {
+            @* Registration Type*@
+            <div class="form-group">
+                <label asp-for="RegistrationTypeId"></label>
+                <select asp-for="RegistrationTypeId" asp-items="Model.RegistrationTypeSelectList" multiple="multiple" class="form-control js-registration-type-multiple-select2">
+                </select>
+                <span asp-validation-for="RegistrationTypeId" class="text-danger"></span>
+            </div>
+        }
+        else
+        {
+            <input type="hidden" asp-for="RegistrationTypeId" value="@Model.RegistrationTypeId[0]" />
+        }
+        @* Registration Status *@
+        <div class="form-group">
+            <label asp-for="RegistrationStatusId"></label>
+            <select asp-for="RegistrationStatusId" asp-items="Model.RegistrationStatusSelectList" multiple="multiple" class="form-control js-registration-status-multiple-select2">
+            </select>
+            <span asp-validation-for="RegistrationStatusId" class="text-danger"></span>
+        </div>
+    }
+    else
+    {
+        <input type="hidden" asp-for="RegistrationTypeId" value="@Model.RegistrationTypeId[0]" />
+    }
+
+    <div class="form-group">
+        <label asp-for="Title" class="control-label"></label>
+        <input asp-for="Title" class="form-control" />
+        <span asp-validation-for="Title" class="text-danger"></span>
+    </div>
+    @if (Model.PageType != PageType.HomePage)
+    {
+        <div class="form-group">
+            <label asp-for="Slug" class="control-label"></label>
+            <div class="input-group mb-3">
+                <div class="input-group-prepend">
+                    <span class="input-group-text" id="basic-addon3">page /</span>
+                </div>
+                <input asp-for="Slug" class="form-control" />
+            </div>
+            <span asp-validation-for="Slug" class="text-danger"></span>
+        </div>
+    }
+    <div class="form-group">
+        <label asp-for="Content" class="control-label"></label>
+        <textarea asp-for="Content" id="TinyEditor" class="js-html-editor"></textarea>
+        <span asp-validation-for="Content" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        @if (Model.Id == 0)
+        {
+            <input type="submit" value="Create" class="btn btn-success" />
+        }
+        else
+        {
+            <input type="submit" value="Save" class="btn btn-success" />
+        }
+        <a-proj class="btn btn-outline-primary" asp-action="Index">Cancel</a-proj>
+    </div>
+</form-proj>
+
+
+<div id="version-modal-container" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="modal-container-label" aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Custom Page Versions</h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p id="version-loading">LOADING VERSIONS....</p>
+                <div id="customPageVersionDetailsView" class="mb-2 mt-2">
+
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<div id="audit-modal-container" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="modal-container-label" aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Custom Page Audits</h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+
+                <p id="loading">LOADING AUDITS....</p>
+                <div id="customPageAuditDetailsView" class="mb-2 mt-2">
+
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section scripts
+{
+    <partial name="_ValidationScriptsPartial" />
+}
+

@@ -1,0 +1,75 @@
+
+﻿@*MRF Changes : Comment out and rename menu options
+    Modified Date : 16th September 2022
+    Modified By : Mandar.Khade@amexgbt.com
+    Team member : Harish.Rame@amexgbt.com
+    JIRA Ticket No : GoRegister/GOR-215, GOR 221    *@
+
+@model bool
+
+@using Microsoft.AspNetCore.Authorization
+@using GoRegister.Framework.Authorization
+@inject IAuthorizationService AuthorizationService
+
+<ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
+    <!-- Sidebar - Brand -->
+    @if (Model)
+    {
+        <a-proj class="sidebar-brand d-flex align-items-center justify-content-center" asp-action="Index" asp-area="Admin" asp-controller="projects">
+            <div class="sidebar-brand-text mx-3">Go Register MRF</div>
+        </a-proj>
+    }
+    else
+    {
+        <a class="sidebar-brand d-flex align-items-center justify-content-center" asp-action="Index" asp-area="Admin" asp-controller="projects">
+            <div class="sidebar-brand-text mx-3">Go Register MRF</div>
+        </a>
+    }
+
+    <!-- Divider -->
+    <hr class="sidebar-divider my-0">
+    @if (Model)
+    { // if project admin
+        <hr class="sidebar-divider my-0">
+        <side-nav-item href="/admin/requests" icon="home">MRF Requests</side-nav-item>
+        <side-nav-item href="/admin/projects" icon="list-alt">MRF Forms</side-nav-item>
+        <hr class="sidebar-divider my-0">
+        @*<side-nav-item asp-action="index" asp-controller="Home" icon="info" project-link>Project dashboard</side-nav-item>*@
+        @*<side-nav-item asp-action="index" asp-controller="Pages" icon="file-alt" project-link>Website pages</side-nav-item>*@
+        @*<side-nav-item asp-action="App" asp-controller="Home" asp-route-path="menu" icon="at" project-link>Menu</side-nav-item>*@
+        @*<side-nav-item asp-action="Index" asp-controller="Sessions" icon="users" project-link>Sessions</side-nav-item>*@
+        <side-nav-item asp-action="App" asp-controller="Home" asp-route-path="themes" icon="paint-brush" project-link>Form theme</side-nav-item>
+        <side-nav-item asp-action="AddServiceCountry" asp-controller="CountryMapping" icon="question-circle" project-link>Country Mapping</side-nav-item>
+        <side-nav-item asp-action="index" asp-controller="FormAdmin" icon="question-circle" project-link>Form Builder</side-nav-item>
+        <side-nav-item asp-action="Index" asp-controller="Delegates" icon="users" project-link>MRF Client Users</side-nav-item>
+        if ((await AuthorizationService.AuthorizeAsync(User, Model, Policies.ManageUsers)).Succeeded)
+        {
+            <side-nav-item asp-action="App" asp-controller="Home" asp-route-path="emails" icon="envelope" project-link>Communication</side-nav-item>
+            <side-nav-item asp-action="Index" asp-controller="RegistrationPaths" icon="cogs" project-link >Registration Settings</side-nav-item>
+            <side-nav-item asp-action="Index" asp-controller="Settings" icon="cogs" project-link>Project settings</side-nav-item>
+        }
+        @*<side-nav-item asp-action="Index" asp-controller="Reports" icon="chart-bar" project-link>Reporting</side-nav-item>*@
+        @*<side-nav-item asp-action="Index" asp-controller="RegistrationType" icon="question-circle" project-link>Registration types</side-nav-item>*@
+
+    }
+    else
+    {
+        <side-nav-item href="/admin/requests" icon="home">MRF Requests</side-nav-item>
+        <side-nav-item href="/admin/projects" icon="list-alt">MRF Forms</side-nav-item>
+        if ((await AuthorizationService.AuthorizeAsync(User, Model, Policies.ManageUsers)).Succeeded)
+        {
+            <side-nav-item asp-action="Index" asp-controller="Users" asp-area="admin" icon="users">Users</side-nav-item>
+            <side-nav-item asp-action="Index" asp-controller="Admin" asp-area="admin" icon="users-cog">Admin</side-nav-item>
+        }
+
+
+    }
+
+    <!-- Divider -->
+    <hr class="sidebar-divider d-none d-md-block">
+    <!-- Sidebar Toggler (Sidebar) -->
+    <div class="text-center d-none d-md-inline">
+        <button class="rounded-circle border-0" id="sidebarToggle"></button>
+    </div>
+
+</ul>

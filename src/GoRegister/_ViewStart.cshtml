@@ -1,0 +1,14 @@
+﻿@using GoRegister.ApplicationCore.Framework;
+@using GoRegister.ApplicationCore.Domain.ProjectThemes.Services;
+
+@inject ProjectTenant _tenant;
+@inject IProjectThemeService _projectThemeService;
+
+@{
+    // Loads page Layout specific to project
+    var tenant = _tenant.Id;
+
+    var layout = _projectThemeService.GetThemeLayoutByProjectId(_tenant.Id);
+
+    Layout = "~/Views/Shared/" + layout + ".cshtml";
+}

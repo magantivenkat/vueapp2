@@ -1,0 +1,165 @@
+﻿@model GoRegister.ApplicationCore.Domain.Settings.Models.GeneralSettingsModel
+
+@using GoRegister.ApplicationCore.Framework
+@using GoRegister.ApplicationCore.Domain.Projects.Enums
+@inject ProjectTenant project
+
+
+<partial name="_SettingsTabs" model='"General"' />
+
+<div asp-validation-summary="All" class="text-danger"></div>
+
+<div id="page-config" data-page="projects-settings"></div>
+
+<form-proj asp-action="Index" autocomplete="off">
+
+    <input type="hidden" id="ClientId" asp-for="@Model.ClientId" />
+    <input type="hidden" id="SelectedEmail" asp-for="@Model.SelectedEmail" />
+
+
+    <div class="row justify-content-around">
+        <div class="col-5">
+            @*PROJECT DETAILS SECTION*@
+            <h3 class="border-bottom pt-4">Project Details</h3>
+            <div class="form-group">
+                <label asp-for="Name" class="control-label"></label>
+                <input asp-for="Name" class="form-control" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Code" class="control-label"></label>
+                <input asp-for="Code" class="form-control" readonly />
+                <span asp-validation-for="Code" class="text-danger"></span>
+            </div>
+
+            @*PROJECT Contact SECTION*@
+            <h3 class="border-bottom pt-4">Project Contact Details</h3>
+            <div class="form-group">
+                <div class="form-check form-check-inline">
+                    <label><input asp-for="EmailType" value="CustomEmail" type="radio" class="form-check-input" id="emailTypeCustom" />Custom Email</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <label><input asp-for="EmailType" value="ClientEmail" type="radio" class="form-check-input" id="emailTypeClient" />Client Email</label>
+                </div>
+            </div>
+
+            <div class="form-group d-none" id="section-emailtype-client">
+                <label asp-for="EmailAddress" class="control-label"></label>
+                <select asp-for="EmailAddress" class="form-control">
+                    <option>-- Select Client Email --</option>
+                </select>
+                <span asp-validation-for="EmailAddress" class="text-danger"></span>
+            </div>
+
+            <div class="form-group d-none" id="section-emailtype-custom">
+                <label asp-for="CustomEmailAddress" class="control-label"></label>
+                <div class="input-group">
+                    <input asp-for="CustomEmailAddress" class="form-control" />
+                    <div class="input-group-append">
+                        <span class="input-group-text" id="basic-addon2">@@notifications.amexgbt.com</span>
+                    </div>
+                </div>
+
+                <span asp-validation-for="CustomEmailAddress" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="EmailDisplayFrom" class="control-label"></label>
+                <input asp-for="EmailDisplayFrom" class="form-control" />
+                <span asp-validation-for="EmailDisplayFrom" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="EmailReplyTo" class="control-label"></label>
+                <input asp-for="EmailReplyTo" class="form-control" />
+                <span asp-validation-for="EmailReplyTo" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="TelephoneNumber" class="control-label"></label>
+                <input asp-for="TelephoneNumber" class="form-control" />
+                <span asp-validation-for="TelephoneNumber" class="text-danger"></span>
+            </div>
+
+            @*SEO SECTION*@
+            <h3 class="border-bottom pt-4">SEO</h3>
+            <div class="form-group form-check">
+                <input asp-for="BlockSearchEngineIndexing" type="checkbox" class="form-check-input" />
+                <label asp-for="BlockSearchEngineIndexing" class="form-check-label"></label>
+            </div>          
+        </div>
+        @*WHEN SECTION*@
+        <div class="col-5">
+            <h3 class="border-bottom pt-4">When</h3>
+            <div class="form-group">
+                <label asp-for="StatusId" class="control-label"></label>
+                <select asp-for="StatusId" asp-items="Html.GetEnumSelectList<ProjectStatus>()" class="form-control"></select>
+                <span asp-validation-for="StatusId" class="text-danger"></span>
+            </div>
+            <div class="form-group form-check">
+                <input type="checkbox" class="form-check-input" asp-for="AllowDuplicateEmails">
+                <label class="form-check-label" asp-for="AllowDuplicateEmails"></label>
+            </div>
+            <div class="form-group">
+                <label asp-for="Timezone" class="control-label"></label>
+                <select asp-for="Timezone" asp-items="Model.TimeZones" class="form-control"></select>
+                <span asp-validation-for="Timezone" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="StartDate" class="control-label"></label>
+                <input asp-for="StartDate" class="form-control" />
+                <span asp-validation-for="StartDate" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="EndDate" class="control-label"></label>
+                <input asp-for="EndDate" class="form-control" />
+                <span asp-validation-for="EndDate" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ArchiveDate" class="control-label"></label>
+                <input asp-for="ArchiveDate" class="form-control" />
+                <span asp-validation-for="ArchiveDate" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="DeleteDataDate" class="control-label"></label>
+                <input asp-for="DeleteDataDate" class="form-control" />
+                <span asp-validation-for="DeleteDataDate" class="text-danger"></span>
+            </div>
+
+            @*PROJECT VENUE SECTION*@
+            <h3 class="border-bottom pt-4">Project Venue Details</h3>
+            <div class="form-group">
+                <label asp-for="VenueName" class="control-label"></label>
+                <input asp-for="VenueName" class="form-control" />
+                <span asp-validation-for="VenueName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="VenueAddress" class="control-label"></label>
+                <input asp-for="VenueAddress" class="form-control" />
+                <span asp-validation-for="VenueAddress" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="VenueWebsite" class="control-label"></label>
+                <input asp-for="VenueWebsite" class="form-control" />
+                <span asp-validation-for="VenueWebsite" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="VenueTelephoneNumber" class="control-label"></label>
+                <input asp-for="VenueTelephoneNumber" class="form-control" />
+                <span asp-validation-for="VenueTelephoneNumber" class="text-danger"></span>
+            </div>
+        </div>
+    </div>
+    <div class="row justify-content-center pt-2 pb-4">
+        <div class="pr-2">
+            <input type="submit" value="Save" class="btn btn-success" />
+        </div>
+        <div class="pl-2">
+            <a-proj class="btn btn-primary" asp-action="Index">Cancel</a-proj>
+        </div>
+    </div>
+</form-proj>
+
+@section scripts {
+
+    <partial name="_ValidationScriptsPartial" />
+
+}

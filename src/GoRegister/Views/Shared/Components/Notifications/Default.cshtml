@@ -1,0 +1,28 @@
+﻿@model GoRegister.ApplicationCore.Framework.Notifications.NotificationsViewModel
+@using GoRegister.ApplicationCore.Framework.Notifications
+
+@{
+}
+
+@foreach(var notification in Model.Notifications) {
+    var alert = "";
+    switch (notification.Type) {
+        case NotificationType.Success:
+            alert = "success";
+            break;
+        case NotificationType.Error:
+            alert = "danger";
+            break;
+        case NotificationType.Information:
+            alert = "information";
+            break;
+        case NotificationType.Warning:
+            alert = "warning";
+            break;
+    }
+
+    <div class="alert alert-@alert">
+        @notification.Message
+    </div>
+}
+

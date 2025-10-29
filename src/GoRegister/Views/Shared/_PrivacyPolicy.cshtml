@@ -1,0 +1,56 @@
+﻿<div id="cfg-privacy-policy" data-url="@Url.Action("HasAcceptedPrivacyPolicy", "Home")"></div>
+
+<div class="modal fade" id="privacy-modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" data-backdrop="static">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="privacypolicy">Privacy commitment of our company</h5>
+            </div>
+            <div class="modal-body">
+                <div class="modal-body">
+                    <div>
+                        <div>
+                            <form asp-action="AcceptPrivacyPolicy" asp-controller="Home" id="privacy-form" autocomplete="off" method="post" class="form-horizontal">
+                                <div>
+                                    <p>
+                                        You can exercise your rights under the GDPR, including but not limited to: rights of access, rectification, erasure (“right to be forgotten”),
+                                        restriction to processing, to object, and portability by consulting the content of our data privacy policy at the following link
+                                        <a href="https://privacy.amexgbt.com/es/statement" target="_blank"><span style="color: rgb(46,63,81);">https://privacy.amexgbt.com/</span></a>
+                                    </p>
+                                    <p>
+                                        As stipulated in the Law on Protection of Personal Data, you are entitled to know the information in our databases. If you verify that the data,
+                                        we hold about you is incorrect or incomplete we will correct them immediately. It may also exercise the right of opposition and cancellation of their
+                                        data without retroactive effect. To exercise your rights, please contact us at the email
+                                        <a href="registration.support@amexgbt.com" target="_blank"><span style="color: rgb(46,63,81);">registration.support@amexgbt.com</span></a>.
+                                    </p>
+                                    <p>
+                                        In order to maintain our continued leadership in protecting the privacy of our customers,<span style="font-weight: bold;">Global Business Travel.</span> is actively involved with
+                                        current commercial initiatives to preserve the personal right of privacy on the Internet.
+                                    </p>
+                                    <p>
+                                        <span style="font-weight: bold;">Global Business Travel</span> has adopted the technical and organizational measures to ensure security and data integrity and to prevent alteration, loss, or unauthorized access.
+                                    </p>
+                                    <p>
+                                        To know more about our data privacy policy and your rights please visit <a href="https://privacy.amexgbt.com/es/statement" target="_blank"><span style="color: rgb(46,63,81);">https://privacy.amexgbt.com/</span></a>
+                                    </p>
+                                </div>
+
+                                <div class="form-check">
+                                    <input type="checkbox" class="form-check-input mb-2" id="AcceptedPrivacyPolicy" name="AcceptedPrivacyPolicy" />
+                                    <label for="AcceptedPrivacyPolicy">
+                                        I read and understand the privacy statement
+                                    </label>
+                                    <span class="invalid" id="PrivacyError" style="display: none">Please accept our privacy policy statement</span>
+                                </div>
+                                <br>
+                                <div class="form-group">
+                                    <input type="submit" class="btn btn-primary" value="Submit" />
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

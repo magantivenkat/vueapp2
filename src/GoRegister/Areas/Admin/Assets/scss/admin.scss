@@ -1,0 +1,154 @@
+﻿// Import Custom SB Admin 2 Variables (Overrides Default Bootstrap Variables)
+@import "../vendor/sbadmin-2/scss/_variables.scss";
+
+// Import Bootstrap
+@import "bootstrap/scss/bootstrap.scss";
+@import "bootstrap-vue/src/index.scss";
+@import "../vendor/sbadmin-2/scss/sb-admin-2.scss";
+
+/* Form control spacing */
+label {
+    margin-bottom: 0.25rem;
+}
+
+.form-group {
+    padding-top: 0.75rem;
+}
+
+/* Flatpickr datepicker overrides */
+input.flatpickr-input + input {
+    cursor: pointer;
+}
+
+input.flatpickr-input + .form-control[readonly] {
+    background-color: $white;
+}
+
+.flatpickr-day {
+    border-radius: 0;
+}
+
+.flatpickr-months {
+    background-color: $blue;
+    padding: 10px 10px 0 10px;
+}
+
+.flatpickr-day.selected {
+    background-color: $blue;
+    border: $blue;
+}
+
+.flatpickr-current-month {
+    padding: 0;
+}
+
+.flatpickr-current-month {
+    color: $white;
+}
+
+.flatpickr-monthDropdown-month {
+    color: $gray-600;
+}
+
+.flatpickr-months .flatpickr-prev-month,
+.flatpickr-months .flatpickr-next-month {
+    color: $white;
+    fill: $white;
+}
+
+/* Theme builder */
+
+.element-name {
+    display: block;
+    padding-bottom: 5px;
+}
+
+.element-name.selected {
+    font-weight: bold;
+    font-size: larger;
+}
+
+.element-name:hover {
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.element-properties {
+    display: flex;
+    flex-direction: column;
+}
+
+
+.theme-option {
+    padding: 5px 0;
+    display: flex;
+    align-items: center;
+}
+
+.theme-option-name {
+    display: inline-block;
+    width: 160px;
+    text-align: right;
+    padding-right: 10px;
+}
+
+.theme-option-properties,
+.theme-options {
+    display: flex;
+}
+
+.theme-tooltip-help {
+    margin-left: auto;
+    display: flex;
+    flex-direction: row-reverse;
+}
+
+.theme-tooltip-help-text {
+    font-family: Arial;
+    font-weight: normal;
+    margin-bottom: 0;
+}
+
+.tooltip-help-box {
+    max-width: 250px;
+    position: absolute;
+    right: 50px;
+    background: #ffffff;
+    border: 1px solid #333333;
+    padding: 8px 10px;
+}
+
+
+.project-search[data-loading="true"]::after {
+    content: "";
+    border: 3px solid rgba(0,0,0,.12);
+    border-right-color: rgba(0,0,0,.48);
+    border-radius: 100%;
+    width: 20px;
+    height: 20px;
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    animation: rotate 1s linear infinite;
+    margin-right: 40px;
+}
+
+.client-theme-edit {
+    cursor: pointer;
+    pointer-events: auto;
+}
+
+.client-theme-delete {
+    cursor: pointer;
+    pointer-events: auto;
+}
+
+.ck-editor__editable_inline {
+    min-height: 400px;
+}
+
+.ck-widget.raw-html-embed .raw-html-embed__source {
+    min-height: 400px;
+}
+

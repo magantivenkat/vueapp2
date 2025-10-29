@@ -1,0 +1,70 @@
+﻿@model GoRegister.Areas.Admin.ViewModels.EventDashboardViewModel
+
+<h1>Project dashboard</h1>
+<script src="/assets/vendor/chart.js/Chart.min.js"></script>
+
+<div id="page-config" data-page="home-index"></div>
+
+
+<div class="row">
+
+    <div class="col-xl-6">
+        <vc:chart-js-line date-range="Day" header="Registrations Per Day" label-data-sets="Registrations"></vc:chart-js-line>
+    </div>
+    <div class="col-xl-4 col-lg-5">
+        <vc:chart-js-pie header="Registration Breakdown" cut-out-percentage="80"></vc:chart-js-pie>
+    </div>
+    <div class="col-xl-2 col-md-4 mb-4">
+        <div class="row mb-2">
+            <div class="col">
+                @if (Model.IsLive)
+                {
+                    <div class="card bg-success text-white shadow">
+                        <div class="card-body">
+                            <div class="col mr-2">
+                                <strong>Current Status</strong>
+                                <div class="text-white small">Live - Registration open</div>
+                            </div>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="card bg-danger text-white shadow">
+                        <div class="card-body">
+                            <div class="col mr-2">
+                                <strong>Current Status</strong>
+                                <div class="text-white small">Closed - Registration not open</div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+        <div class="row mb-2">
+            <div class="col">
+                <div class="card border-left-primary shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Days to project</div>
+
+                                @if ((int)Model.DaysToEvent == 0)
+                                {
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">In Progress</div>
+                                }
+                                else
+                                {
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.DaysToEvent</div>
+                                }
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-calendar fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

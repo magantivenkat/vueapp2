@@ -1,0 +1,48 @@
+﻿@*
+    MRF Changes:
+    Add Activate/Deactivate confirmation popup
+    Modified Date: 15 January 2024
+    Modified By: Vishal.Gaikwad@amexgbt.com
+    JIRA Ticket No: GoRegisterMRF / GOR - 327
+*@
+
+@model GoRegister.ApplicationCore.Domain.Projects.Models.Response
+@{
+    ViewData["Title"] = "Index";
+}
+
+<div id="page-config" data-page="projects-manageMRF"></div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+            <h2>On/Off MRF</h2>
+        </div>
+
+        <table class="table table-bordered" id="dataTable">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Client</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.AllProjects)
+                {
+                    <tr data-projectid="@item.Id">
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Name)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.ClientName)
+                        </td>
+                        <td>
+                            <button class="btn btn-outline-primary toggleBtn" type="button" >@((item.IsActive) ? "Deactivate" : "Activate")</button>                             
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

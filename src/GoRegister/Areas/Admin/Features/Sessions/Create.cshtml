@@ -1,0 +1,207 @@
+﻿@model GoRegister.ApplicationCore.Domain.Sessions.ViewModels.SessionCreateEditViewModel
+@using GoRegister.ApplicationCore.Framework
+@using Microsoft.EntityFrameworkCore.Internal
+@inject ProjectTenant project
+
+
+@{
+    ViewData["Title"] = "Create new session";
+    string currentAction = ViewContext.RouteData.Values["Action"].ToString();
+    bool isEdit = currentAction.ToLower() == "edit" ? true : false;
+}
+
+<h1>@currentAction session</h1>
+<hr />
+
+<div id="page-config" data-page="sessions"></div>
+
+<form-proj method="post" asp-action="Create" autocomplete="off">
+    <input asp-for="Id" type="hidden" />
+    <input asp-for="DateCreatedUtc" type="hidden" />
+    <div asp-validation-summary="All" class="text-danger"></div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            @* Name *@
+            <div class="form-group position-relative">
+                <div>
+                    <label asp-for="Name"></label> <help-text>Okay</help-text>
+                </div>
+                <input asp-for="Name" class="form-control" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+                
+                @*<div class="form-group-question" tabindex="0" data-toggle="tooltip" data-placement="bottom" title="Disabled tooltip">
+                    <i class="fa fa-question"></i>
+                </div>*@
+            </div>
+
+            @* Description *@
+            <div class="form-group">
+                <label asp-for="Description"></label>
+                <textarea asp-for="Description" class="form-control" rows="5"></textarea>
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+
+            @* Category *@
+            <div class="form-group">
+                <label asp-for="SessionCategoryId" class="control-label"></label> <help-text>Okay</help-text>
+                <div class="input-group">
+                    <select asp-for="SessionCategoryId" asp-items="Model.SessionCategories" class="form-control">
+                        <option></option>
+                    </select>
+                    <div class="input-group-append">
+                        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#createCategoryModal">Create Category</button>
+                    </div>
+                </div>
+            </div>
+
+            @* RegTypes *@
+            <div class="form-group">
+                <label asp-for="RegTypeIds" class="control-label"></label> <help-text>Okay</help-text>
+                <div class="input-group">
+                    <select asp-for="RegTypeIds" asp-items="Model.RegTypes" class="form-control">
+                        <option></option>
+                    </select>
+                </div>
+            </div>
+            <hr />
+            <div class="row">
+                <div class="col-8">
+                    <div class="form-group">
+                        <label asp-for="MeetingLink"></label> <help-text>Okay</help-text>
+                        <input asp-for="MeetingLink" class="form-control" />
+                        <span asp-validation-for="MeetingLink" class="text-danger"></span>                       
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="form-group">
+                        <label asp-for="MeetingPassword"></label> <help-text>Okay</help-text>
+                        <input asp-for="MeetingPassword" class="form-control" />
+                        <span asp-validation-for="MeetingPassword" class="text-danger"></span>                        
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            @* Start Date *@
+            <div class="form-group">
+                <label asp-for="DateStartUtc" class="control-label"></label>
+                <input asp-for="DateStartUtc" class="form-control" />
+                <span asp-validation-for="DateStartUtc" class="text-danger"></span>
+            </div>
+
+            @* End Date *@
+            <div class="form-group">
+                <label asp-for="DateEndUtc" class="control-label"></label>
+                <input asp-for="DateEndUtc" class="form-control" />
+                <span asp-validation-for="DateEndUtc" class="text-danger"></span>
+            </div>
+
+            @* Open for Registration *@
+            <div class="form-group">
+                <label asp-for="IsOptional" class="control-label"></label> 
+                <help-text>An included session is a required session. An optional session can be chosen by an attendee at registration.</help-text>
+                <div>
+                    <div class="form-check form-check-inline">
+                        <input asp-for="IsOptional" class="form-check-input" type="radio" id="IsOptional-Yes" value="true">
+                        <label class="form-check-label" for="IsOptional-Yes">Yes</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input asp-for="IsOptional" class="form-check-input" type="radio" id="IsOptional-No" value="false">
+                        <label class="form-check-label" for="IsOptional-No">No</label>
+                    </div>
+                </div>
+            </div>
+
+            @* Open for Registration *@
+            <div class="form-group">
+                <label asp-for="OpenForRegistration" class="control-label"></label> <help-text>Any attendee can register for this session.</help-text>
+                <div>
+                    <div class="form-check form-check-inline">
+                        <input asp-for="OpenForRegistration" class="form-check-input" type="radio" id="OpenForRegistration-Yes" value="true">
+                        <label class="form-check-label" for="OpenForRegistration-Yes">Yes</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input asp-for="OpenForRegistration" class="form-check-input" type="radio" id="OpenForRegistration-No" value="false">
+                        <label class="form-check-label" for="OpenForRegistration-No">No</label>
+                    </div>
+                </div>
+            </div>
+
+            @* Registration Close Date *@
+            <div class="form-group">
+                <label asp-for="DateCloseRegistrationUtc" class="control-label"></label> <help-text>Okay</help-text>
+                <input asp-for="DateCloseRegistrationUtc" class="form-control" />
+                <span asp-validation-for="DateCloseRegistrationUtc" class="text-danger"></span>
+            </div>
+
+            @* Capacity *@
+            <div class="form-group">
+                <label asp-for="Capacity" class="control-label"></label> <help-text>Okay</help-text>
+                <input asp-for="Capacity" class="form-control" />
+                <span asp-validation-for="Capacity" class="text-danger"></span>
+            </div>
+
+            @* CapacityReserved *@
+            <div class="form-group">
+                <label asp-for="CapacityReserved" class="control-label"></label> <help-text>Okay</help-text>
+                <input asp-for="CapacityReserved" class="form-control" />
+                <span asp-validation-for="CapacityReserved" class="text-danger"></span>
+            </div>
+
+            @* CapacityTotal *@
+            <div class="form-group">
+                <label class="control-label">Total Capacity</label> 
+                <input id="CapacityTotal" class="form-control" readonly="readonly" />
+            </div>
+
+            @* Notes *@
+            <div class="form-group">
+                <label asp-for="Notes"></label>
+                <textarea asp-for="Notes" class="form-control" rows="5"></textarea>
+                <span asp-validation-for="Notes" class="text-danger"></span>
+            </div>
+        </div>
+    </div>
+
+    <button class="btn btn-primary mt-3" type="submit">Save</button>
+</form-proj>
+
+<!-- Create Category Modal -->
+<div class="modal fade" id="createCategoryModal" tabindex="-1" role="dialog" aria-labelledby="createCategoryModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createCategoryModalLabel">Create category</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="control-label">Category name</label>
+                    <input class="form-control" id="CategoryName" />
+                </div>
+                <div class="form-group">
+                    <label class="control-label">Category description</label>
+                    <input class="form-control" id="CategoryDescription" />
+                </div>
+                <div class="form-group">
+                    <label class="control-label">Limit to one session</label>
+                    <input type="radio" name="CategoryLimit" value="true" class="form-control" /> Yes
+                    <input type="radio" name="CategoryLimit" value="false" class="form-control" /> No
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="SaveCategoryButton">Save Category</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts
+{
+    <partial name="_ValidationScriptsPartial" />
+   
+}

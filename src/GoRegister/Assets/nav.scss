@@ -1,0 +1,15 @@
+﻿.gr-logo {
+    max-height: 50px;
+}
+
+.gr-navbar {
+    background-color: var(--nav-bg-color, transparent);
+
+    .navbar-nav .gr-nav-link {
+        color: var(--nav-item-color);
+
+        &:hover {
+            color: var(--nav-item-color-hover);
+        }
+    }
+}

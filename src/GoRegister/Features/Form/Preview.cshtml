@@ -1,0 +1,27 @@
+﻿@model GoRegister.Features.Form.PreviewViewModel
+
+@using Newtonsoft.Json;
+
+@{
+    var data = JsonConvert.SerializeObject(Model,
+    new JsonSerializerSettings
+    {
+        ContractResolver = new Newtonsoft.Json.Serialization.CamelCasePropertyNamesContractResolver()
+    });
+
+}
+
+<div id="form-app" data-preview="true"
+     data-submit-url="@Url.Action("Post", "Register")"
+     data-preview-url="@Url.Action("PreviewModel", "Form", new { id = "" })"
+     data-preview-model="@data"
+     data-is-preview="true"></div>
+
+<environment names="Development">
+    <script src="~/client-app/js/chunk-vendors.js" asp-append-version="true"></script>
+    <script src="~/client-app/js/app.js" asp-append-version="true"></script>
+</environment>
+<environment exclude="Development">
+    <script src="/clientapp/client/js/chunk-vendors.js" asp-append-version="true"></script>
+    <script src="/clientapp/client/js/app.js" asp-append-version="true"></script>
+</environment>

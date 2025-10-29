@@ -1,0 +1,20 @@
+﻿<div class="card">
+       <div class="card-body">
+        <div class="row">
+            <div class="col-md-12">
+                <a href="/admin/TPNReport/TPNReportCreate" class="btn btn-primary float-right mb-2" id="btnAdd">Submit Request</a>
+                <h1>TPN Report</h1>
+
+            </div>
+        </div>
+        <br />
+        <div class="row">
+            @await Html.PartialAsync("~/Areas/Admin/Views/TPNReport/TPNReportList.cshtml")
+        </div>
+    </div>
+</div>
+
+@section scripts
+{
+    <script id="script-tpnreports-datatable" src="/assets/admin/js/app/tpnreports-datatable.js" asp-append-version="true" data-postUrl="@Url.ProjectAction("LoadData", "TPNReport", new {area="Admin"})"></script>
+}

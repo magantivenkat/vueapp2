@@ -1,0 +1,24 @@
+﻿@model GoRegister.ApplicationCore.Domain.Settings.Models.ShareUserSettingsViewModel
+
+<div asp-validation-summary="All" class="text-danger"></div>
+
+<partial name="_SettingsTabs" model='"Share"' />
+<h1>Share User</h1>
+
+<div id="page-config" data-page="user-share-role" data-posturl="@Url.ProjectAction("Share", "Settings")"></div>
+
+<form id="AddUserProjMap">
+    <div class="form-group">
+        <div class="input-group">
+            <input type="hidden" asp-for="ProjectId" />
+            @if (Model.Users != null)
+            {
+                <select asp-for="UserId" asp-items="@(new SelectList(Model.Users,"UserId","UserName"))" class="form-control">
+                </select>
+            }
+            <div style="padding-left:1em"><button class="btn btn-success btn-sm" type="submit"><i class="fas fa-user-plus"></i> Add User</button> </div>
+        </div>
+    </div>
+</form>
+
+<partial name="_UserMappedProj" model="@Model" />

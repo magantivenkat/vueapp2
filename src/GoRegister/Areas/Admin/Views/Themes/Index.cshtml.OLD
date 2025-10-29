@@ -1,0 +1,427 @@
+﻿@*@model IEnumerable<GoRegister.Framework.Themes.ThemeManifest>*@
+@model GoRegister.ApplicationCore.Domain.ProjectThemes.Models.ProjectThemeModel
+
+@using GoRegister.ApplicationCore.Framework
+@inject ProjectTenant project
+
+@Html.HiddenFor(m => m.LayoutName)
+@Html.HiddenFor(m => m.Name)
+@Html.HiddenFor(m => m.ThemeCss)
+@Html.HiddenFor(m => m.ThemeGuid)
+@Html.HiddenFor(m => m.ThemeUniqueId)
+@Html.HiddenFor(m => m.LogoUrl)
+@*<a-proj class="btn btn-danger" asp-action="Reset" asp-controller="Themes" asp-area="Admin">Reset Theme</a-proj>
+    <div class="row">
+        @foreach (var item in Model)
+        {
+            <div class="col-sm-6 col-md-4 col-lg-3">
+                <div class="card">
+                    <img class="card-img-top" src="@item.Thumbnail" alt="Card image cap">
+                    <div class="card-body">
+                        <h5 class="card-title">@item.DisplayName</h5>
+                        <p class="card-text">@item.Description</p>
+                    </div>
+                    <div class="card-footer">
+                        <a-proj class="btn btn-primary" asp-action="Detail" asp-controller="Themes" asp-area="Admin" asp-route-theme="@item.Name">Details</a-proj>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>*@
+
+@*
+    Not being used anymore with new method of selecting layout files instead - leaving it in case we revert to this method.
+
+    <h2 class="border-bottom pt-4">Website layout</h2>
+    <p><em>This is where the user would select the general layout of the website. Eg side navigation, top naviagation etc.</em></p>
+    <button class="btn btn-success" onClick="saveLayoutVariables()">Save Layout</button>
+    <p>Navigation layout</p>
+    <input type="radio" name="navigation" value="horizontal" onclick="navigationLayout('horizontal')"> Horizontal<br>
+    <input type="radio" name="navigation" value="vertical" onclick="navigationLayout('vertcial')"> Vertical<br>
+    <p>Site width</p>*@
+
+<div class="alert alert-success" role="alert" id="success-alert" style="display: none;">
+    <strong>The theme was successfully saved!</strong>
+</div>
+
+<div class="d-flex justify-content-between align-items-center border-bottom">
+    <h2 class="pt-2">Basic theme options - @Model.Name</h2>
+    <div>
+        <a class="btn btn-info" style="color: #ffffff;" asp-controller="Themes" asp-action="ThemeHistory" asp-route-id="@Model.ProjectId">Previous versions</a>
+        <button class="btn btn-success" onClick="saveVariables()">Save Theme</button>
+    </div>
+</div>
+
+@if (Model.LayoutName == "_Layout")
+{
+    <p>Click on a theme option below to change the properties for it.</p>
+    <div class="row">
+        <div id="theme-options" class="col-6">
+            <h3 class="border-bottom">Theme options</h3>
+            @*input gets injected from JS below*@
+        </div>
+        <div id="theme-properties" class="col-6">
+            <h3 class="border-bottom">Element Properties</h3>
+            @*input gets injected from JS below*@
+        </div>
+    </div>
+}
+
+
+<link href="/assets/vendor/codemirror/lib/codemirror.css" rel="stylesheet" />
+
+<div class="from-group">
+    <h3 class="border-bottom pt-4">Upload Logo</h3>
+    <input type="file" name="imgUpload" id="imgUpload" class="form-control-file" />
+    <br />
+    @if (Model.LogoUrl != string.Empty && Model.LogoUrl != null)
+    {        
+        <img src=@Model.LogoUrl class="img-fluid" alt="Responsive image" width="200" height="200" />
+    }
+</div>
+
+<h3 class="border-bottom pt-4">Header Html</h3>
+<div class="from-group">
+    <textarea asp-for="HeaderHtml"></textarea>
+</div>
+<h3 class="border-bottom pt-4">Footer Html</h3>
+<div>
+    <textarea asp-for="FooterHtml"></textarea>
+</div>
+
+<h3 class="border-bottom pt-4">Override CSS</h3>
+<div>
+    <textarea id="codemirror-editor-override-css"></textarea>
+</div>
+
+@*<h3 class="border-bottom pt-4">Theme CSS</h3>
+    <div>
+        <textarea id="codemirror-editor-theme-css"></textarea>
+    </div>*@
+
+@section scripts{
+    <script src="/assets/vendor/tinymce_5.0.13/tinymce/js/tinymce/tinymce.min.js"></script>
+    <script src="/assets/vendor/tinymce_5.0.13/tinymce/js/tinymce/jquery.tinymce.min.js"></script>
+
+    <script src="/assets/vendor/codemirror/lib/codemirror.js"></script>
+    <script src="/assets/vendor/codemirror/mode/css/css.js"></script>
+    <script>
+        var codemirrorOverrideCss = CodeMirror.fromTextArea(document.getElementById("codemirror-editor-override-css"), {
+            lineNumbers: true,
+            mode: "css",
+            entity_encoding: "numeric"
+        });
+
+        tinymce.init({
+            selector: '#HeaderHtml,#FooterHtml',
+            plugins: 'code paste',
+            menubar: false,
+            paste_auto_cleanup_on_paste: true,
+            paste_remove_styles: true,
+            toolbar: 'undo redo | bold italic | alignleft aligncenter alignright alignjustify | code | template',
+            extended_valid_elements: 'script[language|type|src]'
+        });
+
+        //var codemirrorThemeCss = CodeMirror.fromTextArea(document.getElementById("codemirror-editor-theme-css"), {
+        //    lineNumbers: true,
+        //    mode: "css"
+        //});
+
+    </script>
+
+    <script>
+
+    var themeProperties = "";
+    var themeId = @Model.Id;
+
+    document.addEventListener("DOMContentLoaded", function getVariables() {
+
+        $.ajax({
+            type: "GET",
+            url: "/admin/project/" + @project.Id + "/Themes/GetTheme",
+                data: { Id: themeId},
+            success: function (data) {
+                themeProperties = JSON.parse(data.themeVariableObject);
+                overrideCss = data.overrideCss;
+                addThemeOptionsToUI(themeProperties);
+                getThemeProperties(themeProperties);
+                getOverrideCss(overrideCss);
+            }
+        });
+    });
+
+    // CSS property settings for theme editor
+    // Highlights theme option currently selected
+    function displayProperties(propteryName, element) {
+        var elementNames = document.getElementsByClassName("element-name");
+        for (var e = 0; e < elementNames.length; e++) {
+            elementNames[e].classList.remove("selected");
+        }
+
+        element.classList.add("selected");
+
+        // Shows/hides theme properties available for each option when clicked on
+        var elementProperties = document.getElementsByClassName("element-properties");
+        for (var p = 0; p < elementProperties.length; p++) {
+            elementProperties[p].style.display = "none";
+        }
+
+        document.getElementById(propteryName).style.display = "block";
+    }
+
+    function showHelpTooltip(element) {
+
+        var showElement = document.getElementById(element);
+
+        showElement.style.display = "block";
+    }
+
+    function hideHelpTooltip(element) {
+
+        var hideElement = document.getElementById(element);
+
+        hideElement.style.display = "none";
+    }
+
+    // Builds UI to manage theme options and their properties
+    function addThemeOptionsToUI(themeProperties) {
+
+        // Loop through theme options and create lables to be click on
+        for (var i = 0; i < themeProperties.length; i++) {
+
+            var elementProperty = themeProperties[i].Element;
+            var element = document.createElement("span");
+
+            var description = themeProperties[i].Description;
+            element.innerHTML = description;
+            element.classList.add("element-name");
+            if (i == 0) {
+                element.classList.add("selected");
+            }
+
+            var onclickAttr = document.createAttribute("onclick");
+            var onclickValue = "displayProperties('" + elementProperty + "-properties', this)";
+            onclickAttr.value = onclickValue;
+
+            document.getElementById("theme-options").appendChild(element);
+            element.setAttributeNode(onclickAttr);
+
+            var elementProperties = document.createElement("div");
+
+            elementProperties.id = elementProperty + "-properties";
+            elementProperties.classList.add("element-properties");
+
+            document.getElementById("theme-properties").appendChild(elementProperties);
+
+            if (i == 0) {
+                elementProperties.style.display = "block";
+            }
+            else {
+                elementProperties.style.display = "none";
+            }
+
+            // Loop through properties for each option and create input for each property
+            for (var v = 0; v < themeProperties[i].Properties.length; v++) {
+                var id = themeProperties[i].Properties[v].Id;
+                var description = themeProperties[i].Properties[v].Description;
+                var inputType = themeProperties[i].Properties[v].InputType;
+
+                var element = document.createElement("div");
+
+                element.classList.add("theme-option");
+
+                // Create span for each property name
+                var spanElement = document.createElement("span");
+                spanElement.classList.add("theme-option-name");
+                spanElement.innerHTML = description + ":";
+
+                element.appendChild(spanElement);
+
+                // Create input type for each property
+                var inputElement = document.createElement("input");
+                inputElement.classList.add("theme-option-property");
+                inputElement.type = inputType;
+                inputElement.id = id;
+
+                element.append(inputElement);
+
+                var tooltipHelpHeader = themeProperties[i].Properties[v].TooltipHeader;
+                var tooltipHelpText = themeProperties[i].Properties[v].TooltipText;
+
+                // Create tooltip help box for each property
+                if (tooltipHelpHeader && tooltipHelpText) {
+                    var tooltipHelpIcon = document.createElement("i");
+                    tooltipHelpIcon.classList.add("fas", "fa-question-circle", "theme-tooltip-help");
+                    tooltipHelpIcon.id = id + "-help";
+
+                    var onMouseOverAttr = document.createAttribute("onmouseover");
+                    var onMouseOverValue = "showHelpTooltip('" + id + "-helptext', this)";
+                    onMouseOverAttr.value = onMouseOverValue;
+
+                    tooltipHelpIcon.setAttributeNode(onMouseOverAttr);
+
+                    var onMouseOutAttr = document.createAttribute("onmouseout");
+                    var onMouseOutValue = "hideHelpTooltip('" + id + "-helptext', this)";
+                    onMouseOutAttr.value = onMouseOutValue;
+
+                    tooltipHelpIcon.setAttributeNode(onMouseOutAttr);
+
+                    element.appendChild(tooltipHelpIcon);
+
+                    var tooltipHelpDiv = document.createElement("div");
+                    tooltipHelpDiv.id = id + "-helptext";
+                    tooltipHelpDiv.classList.add("tooltip-help-box");
+                    tooltipHelpDiv.style.display = "none";
+                    tooltipHelpDiv.innerHTML = "<p class='theme-tooltip-help-text'><strong>" + tooltipHelpHeader + "</strong>" + "<br/>" + tooltipHelpText + "</p>";
+
+                    tooltipHelpIcon.appendChild(tooltipHelpDiv);
+                }
+
+                elementProperties.appendChild(element);
+
+            }
+        }
+    }
+
+    // Get variables on page load
+    function getThemeProperties() {
+
+        for (var i = 0; i < themeProperties.length; i++) {
+
+            for (var v = 0; v < themeProperties[i].Properties.length; v++) {
+                var id = themeProperties[i].Properties[v].Id;
+                var propertyValue = themeProperties[i].Properties[v].VariableValue;
+                var element = document.getElementById(id);
+                element.value = propertyValue;
+            }
+        }
+    }
+
+    function getOverrideCss(overrideCss) {
+        codemirrorOverrideCss.setValue(overrideCss);
+    }
+
+    // Save all properties with their values
+    function saveVariables() {
+
+        var rootVariables = "";
+
+        for (var i = 0; i < themeProperties.length; i++) {
+
+            for (var v = 0; v < themeProperties[i].Properties.length; v++) {
+                var id = themeProperties[i].Properties[v].Id;
+                var element = document.getElementById(id);
+
+                themeProperties[i].Properties[v].VariableValue = element.value;
+
+                var property = themeProperties[i].Properties[v].VariableName;
+                var propertyValue = themeProperties[i].Properties[v].VariableValue;
+
+                rootVariables += (property + ": " + propertyValue + ";");
+
+            }
+        }
+
+        // Get override CSS from text area
+        var overrideCss = codemirrorOverrideCss.getValue();
+        var headerHtml = tinymce.get("HeaderHtml").getContent();
+        var footerHtml = tinymce.get("FooterHtml").getContent();
+        var themeCss = document.getElementById("ThemeCss").value;
+        var name = document.getElementById("Name").value;
+        var layoutName = document.getElementById("LayoutName").value;
+        var themeGuid = document.getElementById("ThemeGuid").value;
+        var themeUniqueId = document.getElementById("ThemeUniqueId").value;
+        var logoUrl = document.getElementById("LogoUrl").value;
+
+        // Create FormData object
+        var formData = new FormData();
+        var file = document.getElementById("imgUpload").files[0];
+
+        formData.append("ProjectId", @project.Id );
+        formData.append("Name", name);
+        formData.append("LayoutName", layoutName);
+        formData.append("HeaderHtml", headerHtml);
+        formData.append("FooterHtml", footerHtml);
+        formData.append("ThemeVariables", rootVariables);
+        formData.append("ThemeCss", themeCss);
+        formData.append("ThemeGuid", themeGuid);
+        formData.append("ThemeVariableObject", JSON.stringify(themeProperties));
+        formData.append("LogoUrl", logoUrl);
+        formData.append("ThemeUniqueId", themeUniqueId);
+        formData.append("file", file);
+        // Sending to DB
+        $.ajax({
+            type: "POST",
+            url: "/admin/project/" + @project.Id + "/Themes/PostTheme",            
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function (id) {
+                themeId = id;
+                // notification - theme saved
+                //$("#success-alert").hide();
+
+                $("#success-alert").fadeTo(2000, 500).slideUp(500, function() {
+                    $("#success-alert").slideUp(500);
+                });
+
+            }
+        });
+
+    }
+
+    // Now wont be used with new selecting layout option - leaving it in case we revert back to this way.
+
+    // Below this needs some thinking about - CSS variables object doesnt allow for this yet
+    // Properties are 1:1 and will show up in theme options/properties section
+    // 4 options need to be changed to get nav bar and page layout to  flip around.
+    //function navigationLayout(navigationLayout) {
+
+    //    let root = document.documentElement;
+
+    //    if (navigationLayout == 'horizontal') {
+    //        root.style.setProperty('--navigation-direction-page', 'column');
+    //        root.style.setProperty('--navigation-direction-nav', 'row');
+    //        root.style.setProperty('--navigation-direction-lastchild', 'auto');
+    //        root.style.setProperty('--navigation-direction-navWidth', 'auto');
+    //    }
+    //    else {
+    //        root.style.setProperty('--navigation-direction-page', 'row');
+    //        root.style.setProperty('--navigation-direction-nav', 'column');
+    //        root.style.setProperty('--navigation-direction-lastchild', '0');
+    //        root.style.setProperty('--navigation-direction-navWidth', '200px');
+    //    }
+    //}
+
+    //function saveLayoutVariables() {
+
+    //    var htmlStyles = getComputedStyle(document.documentElement);
+
+    //    var variables = [
+    //        "--navigation-direction-page",
+    //        "--navigation-direction-nav",
+    //        "--navigation-direction-lastchild",
+    //        "--navigation-direction-navWidth"
+    //    ]
+
+    //    variablesToSave = new Object;
+    //    for (var i = 0; i < variables.length; i++) {
+    //        variablesToSave[variables[i]] = htmlStyles.getPropertyValue(variables[i]);
+    //        console.log(variablesToSave[variables[i]]);
+    //    }
+
+    //    localStorage.setItem("layout", JSON.stringify(variablesToSave));
+    //}
+
+    //function getLayoutFromLocalStorage(propertyValue) {
+
+    //    var layout = JSON.parse(localStorage.getItem("layout"));
+
+    //    return layout[propertyValue];
+    //}
+
+
+
+    </script>
+
+}

@@ -1,0 +1,47 @@
+﻿@model GoRegister.Areas.Admin.Models.ChartViewModels.ChartLineViewModel
+
+
+<div class="card shadow mb-4">
+    @*<input type="hidden" id="linechartdata" data-datasetslabel="@Model.DataSetsLabel" 
+            data-rawjsonlabel="@Html.Raw(Json.Serialize(@Model.Labels))" data-rawjsonchart="@Html.Raw(Json.Serialize(@Model.ChartData))"/>*@ 
+    <input type="hidden" id="linechartdata" data-datasetslabel="@Model.DataSetsLabel"
+           data-rawjsonlabel="(Json.Serialize(@Model.Labels))" data-rawjsonchart="(Json.Serialize(@Model.ChartData))" />
+
+
+    <!-- Card Header - Dropdown -->
+    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+        <h6 class="m-0 font-weight-bold text-primary">@Model.Header</h6>
+        <div class="dropdown no-arrow">
+            <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+            </a>
+            <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in" aria-labelledby="dropdownMenuLink">
+                <div class="dropdown-header">Dropdown Header:</div>
+                <a class="dropdown-item" href="#">Action</a>
+                <a class="dropdown-item" href="#">Another action</a>
+                <div class="dropdown-divider"></div>
+                <a class="dropdown-item" href="#">Something else here</a>
+            </div>
+        </div>
+    </div>
+    <!-- Card Body -->
+    <div class="card-body">
+        @{ if (Model.ChartData.Any(d => d > 0))
+            {
+                <div class="chart-area">
+                    <canvas id="lineChart" class="chartjs-render-monitor"></canvas>
+                </div>
+            }
+            else
+            {
+                <div class="text-center">Not enough data to generate graph</div>
+            }
+        }
+    </div>
+</div>
+
+@section scripts
+{
+    <script id="script-chart-line" src="/assets/admin/js/app/script-chart-line.js" asp-append-version="true"></script>
+}
+

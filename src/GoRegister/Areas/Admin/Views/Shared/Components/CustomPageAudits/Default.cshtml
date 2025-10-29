@@ -1,0 +1,34 @@
+﻿@model IEnumerable<GoRegister.ApplicationCore.Domain.CustomPages.Models.CustomPageAuditModel>
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="table-responsive">
+                <table class="table">
+                    <tbody>
+                        <tr>
+                            <th>Page Status</th>
+                            <th>Registration Type(s)</th>
+                            <th>Timestamp</th>
+                        </tr>
+                        @foreach (var customPageAudit in Model)
+                        {
+                            <tr>
+                                <td>@(customPageAudit.PageStatus ? "Visible" : "Hidden")</td>
+                                <td>
+                                    @foreach (var type in customPageAudit.CustomPageAuditRegistrationTypes)
+                                    {
+                                        <span class="mr-2">@type.Name</span>
+                                    }
+                                </td>
+                                <td>
+                                    <label id="customPageTooltip" data-toggle="tooltip" data-placement="left" title="@customPageAudit.ToolTipAuditInfo"> @customPageAudit.HumanizedDateSent</label>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

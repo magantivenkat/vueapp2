@@ -1,0 +1,57 @@
+﻿/*
+    CSS specific for horizontal navigation layout
+*/
+
+* {
+    box-sizing: border-box;
+}
+
+html, body {
+    height: 100%;
+}
+
+body {
+    font-family: 'Open Sans', Arial, Helvetica, sans-serif;
+    font-size: 16px;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+header {
+    display: flex;
+    width: 100%;
+    max-width: 1000px;
+    justify-content: center;
+}
+
+nav {
+    list-style-type: none;
+    display: flex;
+    margin: 0;
+    padding: 0;
+    flex-direction: column;
+    width: var(--navigation-direction-navWidth);
+    background: #00175a; /*var (--background-color-navBar);*/
+    overflow-y: hidden;
+}
+    nav .show {
+        display: flex;
+    }
+
+main {
+    display: flex;
+    flex: 1 0 auto;
+    width: 100%;
+    max-width: 1000px;
+}
+
+footer {
+    display: flex;
+    flex-shrink: 0;
+    width: 100%;
+    max-width: 1000px;
+    justify-content: center;
+}
+

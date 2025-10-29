@@ -1,0 +1,25 @@
+﻿<div class="float-right">
+    <a asp-action="Create" class="btn btn-primary">Add Domain</a>
+</div>
+<h1>Domains</h1>
+<div class="table-responsive">
+    <table class="table table-bordered" id="dataTable">
+        <thead>
+            <tr>
+                <th><span style="margin-left: 25px">&nbsp;&nbsp;Host</span></th>
+                <th></th>
+            </tr>
+        </thead>
+        <tfoot>
+            <tr>
+                <th><span style="margin-left: 25px">&nbsp;&nbsp;Host</span></th>
+                <th></th>
+            </tr>
+        </tfoot>
+    </table>
+</div>
+
+@section scripts
+{
+    <script id="script-domains" src="/assets/admin/js/app/domains-datatable.js" asp-append-version="true" data-postUrl="@Url.ProjectAction("LoadData", "Domain", new {area="Admin"})"></script>   
+}

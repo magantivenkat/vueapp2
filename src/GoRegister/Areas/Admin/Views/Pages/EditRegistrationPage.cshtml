@@ -1,0 +1,202 @@
+﻿@using GoRegister.ApplicationCore.Data.Enums
+@using GoRegister.ApplicationCore.Framework
+@inject ProjectTenant project
+
+@model GoRegister.ApplicationCore.Data.Models.RegistrationPage
+
+@{
+    ViewData["Title"] = "Edit Registration Page";
+}
+
+<div class="d-flex justify-content-between align-items-center">
+    <div class="float-left">
+        <h1>Edit Registration Page</h1>
+    </div>
+    <div class="float-right">
+        @*<a asp-action="PreviewPage" asp-route-id="@Model.Id" class="btn btn-info" target="_blank">Preview</a>*@
+    </div>
+</div>
+
+
+<form asp-action="EditRegistrationPage" asp-route-projectid="@project.Id">
+    @Html.HiddenFor(model => model.Id)
+
+    <div class="form-group form-check">
+        <input type="checkbox" class="form-check-input" asp-for="IsVisible">
+        <label class="form-check-label" asp-for="IsVisible"></label>
+    </div>
+
+    @*@if (Model.HasMultipleRegistrationTypes)
+        {
+            <div class="form-group">
+                <label asp-for="RegistrationTypeId"></label>
+                <select asp-for="RegistrationTypeId" asp-items="Model.RegistrationTypeSelectList" multiple="multiple" class="form-control js-registration-type-multiple-select2">
+                </select>
+                <span asp-validation-for="RegistrationTypeId" class="text-danger"></span>
+            </div>
+        }
+        else
+        {
+            <input type="hidden" asp-for="RegistrationTypeId" value="@Model.RegistrationTypeId" />
+        }*@
+
+    @*<div class="form-group">
+            <label asp-for="RegistrationStatusId"></label>
+            <select asp-for="RegistrationStatusId" asp-items="Model.RegistrationStatusSelectList" multiple="multiple" class="form-control js-registration-status-multiple-select2">
+            </select>
+            <span asp-validation-for="RegistrationStatusId" class="text-danger"></span>
+        </div>*@
+
+    <div class="form-group">
+        <label asp-for="Title" class="control-label"></label>
+        <input asp-for="Title" class="form-control" />
+        <span asp-validation-for="Title" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+
+        <input type="submit" value="Save" class="btn btn-success" />
+
+        <a-proj class="btn btn-outline-primary" asp-action="Index">Cancel</a-proj>
+    </div>
+</form>
+
+
+@*<div id="version-modal-container" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="modal-container-label" aria-hidden="true">
+        <div class="modal-dialog modal-xl" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Custom Page Versions</h4>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <p id="version-loading">LOADING VERSIONS....</p>
+                    <div id="customPageVersionDetailsView" class="mb-2 mt-2">
+
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+                </div>
+
+            </div>
+        </div>
+    </div>*@
+
+@*<div id="audit-modal-container" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="modal-container-label" aria-hidden="true">
+        <div class="modal-dialog modal-xl" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Custom Page Audits</h4>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+
+                    <p id="loading">LOADING AUDITS....</p>
+                    <div id="customPageAuditDetailsView" class="mb-2 mt-2">
+
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+                </div>
+
+            </div>
+        </div>
+    </div>*@
+
+@section scripts
+{
+    <script>
+        $(function () {
+
+            $(document).ajaxStart(function () {
+                $("#version-loading").show();
+            });
+
+            $(document).ajaxStop(function () {
+                $("#version-loading").hide();
+            });
+
+            $('#version-modal-container').on('show.bs.modal',
+                function (event) {
+                    var container = $("#customPageVersionDetailsView");
+
+                    const clickedLink = event.relatedTarget;
+
+                    const customPageVersionId = clickedLink.id;
+
+                    //const splitUrl = $(location).attr("href").split('/Edit')[0];
+                    const splitUrl = (window.location.href).split('/Edit')[0];
+
+                    const actionUrl = `${splitUrl}/CustomPageVersions/${customPageVersionId}`;
+
+                    $.get(actionUrl, function (data) {
+                        container.html(data);
+                    });
+
+                });
+
+            $("#version-modal-container").on("hidden.bs.modal",
+                function () {
+                    $("#customPageVersionDetailsView").html("");
+                });
+
+
+            $(document).ajaxStart(function () {
+                $("#loading").show();
+            });
+
+            $(document).ajaxStop(function () {
+                $("#loading").hide();
+            });
+
+            $('#audit-modal-container').on('show.bs.modal',
+                function (event) {
+                    var container = $("#customPageAuditDetailsView");
+
+                    const clickedLink = event.relatedTarget;
+
+                    const customPageAuditId = clickedLink.id;
+
+                    //const splitUrl = $(location).attr("href").split('/Edit')[0];
+                    const splitUrl = (window.location.href).split('/Edit')[0];
+
+                    const actionUrl = `${splitUrl}/CustomPageAudits/${customPageAuditId}`;
+
+                    $.get(actionUrl, function (data) {
+                        container.html(data);
+                    });
+
+                });
+
+            $("#audit-modal-container").on("hidden.bs.modal",
+                function () {
+                    $("#customPageAuditDetailsView").html("");
+                });
+        });
+    </script>
+
+
+    <script>
+
+        $(document).ready(function () {
+            $('.js-registration-type-multiple-select2').select2({
+                placeholder: {
+                    id: '-1', // the value of the option
+                    text: 'Select at least one type'
+                }
+            });
+            $('.js-registration-status-multiple-select2').select2({
+                placeholder: {
+                    id: '-1', // the value of the option
+                    text: 'Select at least one status '
+                }
+            });
+        });
+
+    </script>
+
+    <partial name="_ValidationScriptsPartial" />
+}
+

@@ -1,0 +1,47 @@
+﻿@model GoRegister.ApplicationCore.Domain.Domains.DomainModel
+<link href="/assets/vendor/codemirror/lib/codemirror.css" rel="stylesheet" />
+@{
+    string currentAction = ViewContext.RouteData.Values["Action"].ToString();
+    bool isEdit = currentAction.ToLower() == "edit" ? true : false;
+}
+
+<h1>@currentAction Domain</h1>
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Save" asp-controller="Domain" asp-area="Admin">
+            <input asp-for="Id" type="hidden" />
+            <div class="form-group">
+                <label asp-for="Host" class="control-label"></label>
+                <input asp-for="Host" class="form-control" />
+                <span asp-validation-for="Host" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ClientId" class="control-label"></label>
+                <select asp-for="ClientId" asp-items="Model.ClientList" class="form-control">
+                    <option value="0">-- Select Client --</option>
+                </select>
+                <span asp-validation-for="ClientId" class="text-danger"></span>
+            </div>
+            <label asp-for="IsSubdomainHost" class="control-label"></label>
+            <div class="form-check">
+                <input type="radio" name="IsSubdomainHost" value="false" @(Model.IsSubdomainHost == false ? "checked" : null ) class="form-check-input" />
+                <label class="form-check-label">example.com/<strong>project</strong></label>
+                <span asp-validation-for="IsSubdomainHost" class="text-danger"></span>
+            </div>
+            <div class="form-check">
+                <input type="radio" name="IsSubdomainHost" value="true" @(Model.IsSubdomainHost == true ? "checked" : null) class="form-check-input" />
+                <label class="form-check-label"><strong>project</strong>.example.com</label>
+                <span asp-validation-for="IsSubdomainHost" class="text-danger"></span>
+            </div>
+            <button class="btn btn-success" type="submit">Save Domain</button>
+        </form>
+    </div>
+</div>
+
+
+@section scripts
+    {
+    <partial name="_ValidationScriptsPartial" />
+    
+}
+

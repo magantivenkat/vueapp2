@@ -1,0 +1,55 @@
+﻿@model GoRegister.ApplicationCore.Domain.CustomPages.Models.CustomPageCreateEditModel
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<div id="page-config" data-page="pages-details"></div>
+
+
+<h1>Details</h1>
+
+<div>
+    <hr />
+    <dl class="row">
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.IsVisible)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.IsVisible)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Title)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Title)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Slug)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Slug)
+        </dd>
+        @if (Model.HasMultipleRegistrationTypes)
+        {
+            <dt class="col-sm-2">
+                @Html.DisplayNameFor(model => model.RegistrationTypeId)
+            </dt>
+            <dd class="col-sm-10">
+                <select asp-for="RegistrationTypeId" asp-items="Model.RegistrationTypeSelectList" multiple="multiple" disabled="disabled" class="form-control js-registration-type-multiple-select2">
+                </select>
+            </dd>
+        }
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.RegistrationStatusId)
+        </dt>
+        <dd class="col-sm-10">
+            <select asp-for="RegistrationStatusId" asp-items="Model.RegistrationStatusSelectList" multiple="multiple" disabled="disabled" class="form-control js-registration-status-multiple-select2">
+            </select>
+        </dd>
+    </dl>
+
+</div>
+<div>
+    <partial name="_DetailsEditAndBackToListButtonsPartial" model="@Model.Id" />
+</div>

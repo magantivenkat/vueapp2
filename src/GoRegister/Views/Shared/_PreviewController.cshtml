@@ -1,0 +1,37 @@
+﻿@model GoRegister.Controllers.PreviewCookie
+
+@using Microsoft.AspNetCore.Http
+@using Newtonsoft.Json
+@using Microsoft.AspNetCore.Http.Extensions
+@inject IHttpContextAccessor HttpContextAccessor
+
+@{
+    bool display = false;
+    if (HttpContextAccessor.HttpContext.Request.Cookies["preview"] != null)
+    {
+        display = true;
+        var model = JsonConvert.DeserializeObject<GoRegister.Controllers.PreviewCookie>(HttpContextAccessor.HttpContext.Request.Cookies["preview"]);
+        Model.RegType = model.RegType;
+    }
+
+    var returnUrl = HttpContextAccessor.HttpContext.Request.GetDisplayUrl();
+
+    var regTypes = new List<SelectListItem>()
+    {
+        new SelectListItem("Default", "3"),
+        new SelectListItem("Special", "5")
+    };
+
+}
+
+
+@if (display)
+{
+    <form asp-controller="Home" asp-action="UpdatePreview" asp-route-returnUrl="@returnUrl">
+
+        <select id="js-preview-regType" asp-for="RegType" asp-items="regTypes">
+        </select>
+
+        <input type="submit" value="Update" class="btn btn-primary" />
+    </form>
+}

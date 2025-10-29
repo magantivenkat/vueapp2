@@ -1,0 +1,31 @@
+{
+  "manifestVersion": 1,
+  "iisConfig": {
+    "appPools": [
+      {
+        "name": "mrfPool"
+       
+      }
+    ]
+  }
+  "deployments": {
+    "aspNetCoreWeb": [
+      {
+        "name": "GoRegister-MRF-Development",
+        "parameters": {
+          "appBundle": "Publish_WebApp_20221019.zip",
+          "iisPath": "/",
+          "iisWebSite": "Default Web Site"
+        }
+      },
+      {
+        "name": "GoRegisterMRFAPI",
+        "parameters": {
+          "appBundle": "Publish_MRFApi_20221019.zip",
+          "iisPath": "/api",
+          "iisWebSite": "Default Web Site"
+        }
+      }
+    ]
+  }
+}

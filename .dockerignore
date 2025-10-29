@@ -1,0 +1,5 @@
+# Ignore all
+**
+
+# Except precompiled files
+!/GoRegister/bin/Release/**

@@ -1,0 +1,34 @@
+﻿<div class="float-right">
+    <a-proj asp-action="Create" class="btn btn-primary">Create Session</a-proj>
+</div>
+<h1>Sessions</h1>
+<div class="table-responsive">
+    <table class="table table-bordered" id="dataTable">
+        <thead>
+            <tr>
+                <th><span style="margin-left: 25px">&nbsp;&nbsp;Name</span></th>
+                <th>Type</th>
+                <th>Category</th>
+                <th>Start Date</th>
+                <th>Registered</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tfoot>
+            <tr>
+                <th><span style="margin-left: 25px">&nbsp;&nbsp;Name</span></th>
+                <th>Type</th>
+                <th>Category</th>
+                <th>Start Date</th>
+                <th>Registered</th>
+                <th></th>
+            </tr>
+        </tfoot>
+    </table>
+</div>
+
+@section scripts
+{
+    <script id="script-session-index" src="/assets/admin/js/app/sessions-datatable.js" asp-append-version="true" data-postUrl="@Url.ProjectAction("LoadData", "Sessions")"></script>
+
+}

@@ -1,0 +1,16 @@
+﻿@model List<SelectListItem>
+
+<select id="SiteLink">
+    <option>-- Select a test Client --</option>
+    @foreach (var item in Model)
+    {
+        if (item.Selected)
+        {
+            <option value="@item.Value" selected="selected">@item.Text</option>
+        }
+        else
+        {
+            <option value="@item.Value">@item.Text</option>
+        }
+    }
+</select>

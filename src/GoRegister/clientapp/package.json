@@ -1,0 +1,93 @@
+{
+  "name": "formal",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "serve": "set NODE_OPTIONS=--openssl-legacy-provider && vue-cli-service serve",
+    "build": "set NODE_OPTIONS=--openssl-legacy-provider && npm run build:admin && npm run build:client",
+    "build:admin": "cross-env USE_CKEDITOR=true vue-cli-service build --dest ./dist/admin src/dist/admin.js",
+    "build:client": "cross-env USE_CKEDITOR=false vue-cli-service build --dest ./dist/client src/dist/client.js",
+    "lint": "vue-cli-service lint",
+    "watch": "vue-cli-service build --mode development --watch"
+  },
+  "dependencies": {
+    "@ckeditor/ckeditor5-alignment": "^29.1.0",
+    "@ckeditor/ckeditor5-basic-styles": "^29.1.0",
+    "@ckeditor/ckeditor5-build-classic": "^29.1.0",
+    "@ckeditor/ckeditor5-editor-classic": "^29.1.0",
+    "@ckeditor/ckeditor5-essentials": "^29.1.0",
+    "@ckeditor/ckeditor5-find-and-replace": "^29.1.0",
+    "@ckeditor/ckeditor5-font": "^29.1.0",
+    "@ckeditor/ckeditor5-html-embed": "^29.2.0",
+    "@ckeditor/ckeditor5-html-support": "^29.2.0",
+    "@ckeditor/ckeditor5-link": "^29.1.0",
+    "@ckeditor/ckeditor5-list": "^29.1.0",
+    "@ckeditor/ckeditor5-paragraph": "^29.1.0",
+    "@ckeditor/ckeditor5-source-editing": "^29.1.0",
+    "@ckeditor/ckeditor5-table": "^29.1.0",
+    "@ckeditor/ckeditor5-theme-lark": "^29.1.0",
+    "@ckeditor/ckeditor5-upload": "^29.1.0",
+    "@ckeditor/ckeditor5-vue2": "^1.0.5",
+    "@tinymce/tinymce-vue": "^3.2.8",
+    "@trevoreyre/autocomplete-vue": "^2.2.0",
+    "axios": "^0.19.2",
+    "bootstrap": "^4.6.0",
+    "bootstrap-vue": "^2.21.2",
+    "chart.js": "^2.9.4",
+    "core-js": "^3.6.4",
+    "lodash.debounce": "^4.0.8",
+    "lodash.get": "^4.4.2",
+    "sanitize-html": "^2.5.0",
+    "sweetalert2": "^10.14.0",
+    "tinymce": "^5.8.2",
+    "vue": "^2.6.11",
+    "vue-bootstrap-typeahead": "^0.2.6",
+    "vue-chartjs": "^3.5.1",
+    "vue-codemirror": "^4.0.6",
+    "vue-flatpickr-component": "^8.1.7",
+    "vue-router": "^3.5.1",
+    "vue-sanitize": "^0.2.3",
+    "vue-simple-suggest": "^1.11.2",
+    "vue-sweetalert2": "^5.0.5",
+    "vuedraggable": "^2.24.1",
+    "vuelidate": "^0.7.5",
+    "vuex": "^3.5.1",
+    "webpack-hot-middleware": "^2.25.0"
+  },
+  "devDependencies": {
+    "@ckeditor/ckeditor5-dev-utils": "^25.3.1",
+    "@ckeditor/ckeditor5-dev-webpack-plugin": "^25.3.1",
+    "@vue/cli-plugin-babel": "~4.3.0",
+    "@vue/cli-plugin-eslint": "~4.3.0",
+    "@vue/cli-service": "~4.3.0",
+    "aspnet-webpack": "^3.0.0",
+    "babel-eslint": "^10.1.0",
+    "cross-env": "^7.0.3",
+    "eslint": "^6.7.2",
+    "eslint-plugin-vue": "^6.2.2",
+    "postcss-loader": "^3.0.0",
+    "raw-loader": "^0.5.1",
+    "vue-template-compiler": "^2.6.11"
+  },
+  "eslintConfig": {
+    "root": true,
+    "env": {
+      "node": true
+    },
+    "extends": [
+      "plugin:vue/essential",
+      "eslint:recommended"
+    ],
+    "parserOptions": {
+      "parser": "babel-eslint"
+    },
+    "rules": {
+      "no-unused-vars": "off"
+    }
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead"
+  ]
+}

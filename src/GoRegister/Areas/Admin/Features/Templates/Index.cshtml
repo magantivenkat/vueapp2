@@ -1,0 +1,39 @@
+﻿@model List<GoRegister.ApplicationCore.Domain.Templates.Queries.GetTemplates.ProjectModel>
+<div class="float-right">
+    <a asp-action="Create" asp-controller="Projects" asp-route-istemplate="true" class="btn btn-primary">Add Template</a>
+</div>
+<h1>Templates</h1>
+<div class="table-responsive">
+    <table class="table table-bordered" id="dataTable">
+        <thead>
+            <tr>
+                <th><span style="margin-left: 25px">&nbsp;&nbsp;Name</span></th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.Name</td>
+                <td>
+                    <a class="btn btn-outline-primary" asp-action="App" asp-controller="Home" asp-route-path="themes" asp-route-projectid="@item.Id">Open</a>
+
+                   
+                </td>
+            </tr>
+        }
+        <tfoot>
+            <tr>
+                <th><span style="margin-left: 25px">&nbsp;&nbsp;Name</span></th>
+                <th>Actions</th>
+            </tr>
+        </tfoot>
+    </table>
+</div>
+
+@section scripts
+{
+
+    <script src="/assets/admin/js/app/templates-datatable.js" asp-append-version="true"></script>
+
+}

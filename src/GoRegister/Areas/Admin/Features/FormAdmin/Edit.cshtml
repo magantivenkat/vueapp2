@@ -1,0 +1,9 @@
+﻿@model int
+
+@{
+
+}
+
+<div id="builder-app"
+     data-get-url="@Url.ProjectAction("Get", new { id = Model })"
+     data-post-url="@Url.ProjectAction("Post", new { id = Model })"></div>

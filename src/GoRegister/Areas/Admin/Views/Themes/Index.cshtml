@@ -1,0 +1,59 @@
+﻿@*@model GoRegister.ApplicationCore.Domain.ProjectThemes.Commands.ProjectThemeEditCommand
+<link href="/assets/vendor/codemirror/lib/codemirror.css" rel="stylesheet" />
+
+<div id="page-config" data-page="theme-edit"></div>
+
+<form-proj asp-action="SaveTheme" asp-controller="Themes" autocomplete="off" enctype="multipart/form-data">
+
+    <div class="d-flex justify-content-between align-items-center border-bottom">
+        <h1>Edit Theme</h1>
+        <input type="submit" value="Save" class="btn btn-success" />
+    </div>
+    @if (Model.ProjectIsTemplate)
+    {
+        <div class="form-group">
+            <label asp-for="LayoutName" class="control-label"></label>
+            <select asp-for="LayoutName" asp-items="Model.LayoutOptions" class="form-control"></select>
+            <span asp-validation-for="LayoutName" class="text-danger"></span>
+        </div>
+    }
+    <h3 class="border-bottom pt-4">Upload Logo</h3>
+    <input type="file" name="file" id="imgUpload" class="form-control-file" asp-for="File" />
+    <br />
+    @if (Model.LogoUrl != string.Empty && Model.LogoUrl != null)
+    {
+        <img src=@Model.LogoUrl class="img-fluid" alt="Responsive image" width="200" height="200" />
+    }
+
+
+    <h3 class="border-bottom pt-4">Theme CSS</h3>
+    <div class="from-group">
+        <textarea asp-for="ThemeCss" data-codemirror="css"></textarea>
+    </div>
+    <h3 class="border-bottom pt-4">Theme Header Scripts</h3>
+    <div class="from-group">
+        <textarea asp-for="HeadScripts" data-codemirror="javascript"></textarea>
+    </div>
+    <h3 class="border-bottom pt-4">Theme Footer Scripts</h3>
+    <div>
+        <textarea asp-for="FooterScripts" data-codemirror="javascript"></textarea>
+    </div>
+
+    <h3 class="border-bottom pt-4">Header Html</h3>
+    <div class="from-group">
+        <textarea asp-for="HeaderHtml" class="js-html-editor"></textarea>
+    </div>
+    <h3 class="border-bottom pt-4">Footer Html</h3>
+    <div>
+        <textarea asp-for="FooterHtml" class="js-html-editor"></textarea>
+    </div>
+
+    <div class="d-flex justify-content-end align-items-center border-top mt-3 pt-3 pb-3">
+        <input type="submit" value="Save" class="btn btn-success" />
+    </div>
+</form-proj>
+
+@section libscripts {
+    <script src="/assets/vendor/codemirror/lib/codemirror.js"></script>
+    <script src="/assets/vendor/codemirror/mode/css/css.js"></script>   
+}*@

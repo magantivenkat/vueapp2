@@ -1,0 +1,25 @@
+﻿@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>GoRegister</title>
+</head>
+<body style="background-color: #036ecf;
+        color: white;
+        text-align: center;
+        font-family: Arial;">
+
+    <h1 style="">GoRegister</h1>
+    <h4>Access Denied</h4>
+
+    @{ var email = "mailto: " + ViewBag.emailFrom;}
+
+    <h6>
+        Please contact the project admin team @@ <a href=" @email">Email</a>
+    </h6>
+</body>
+</html>

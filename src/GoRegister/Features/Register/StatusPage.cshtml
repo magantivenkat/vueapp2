@@ -1,0 +1,14 @@
+﻿@model GoRegister.Features.Register.IndexHandler.RegistrationStatusModel
+
+<div class="container">
+    @*@Html.Raw(Model.DisplayText)*@
+    @(Model.DisplayText)
+
+    @if (Model.CanCancel)
+    {
+<div class="card">
+    <div class="card-body">
+        <a asp-action="Cancel" asp-controller="Register" class="gr-cancel-action btn btn-outline-primary">Cancel your registration</a>
+    </div>
+</div>}
+</div>

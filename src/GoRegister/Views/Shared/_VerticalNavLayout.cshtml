@@ -1,0 +1,90 @@
+﻿@using GoRegister.ApplicationCore.Domain.Settings.Services
+@*@model GoRegister.ApplicationCore.Domain.ProjectTheme.Models.ProjectThemeModel*@
+
+@inject GoRegister.ApplicationCore.Framework.ProjectTenant _project
+@inject IProjectSettingsAccessor settingsAccessor
+
+@{
+    var settings = await settingsAccessor.GetAsync();
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <title></title>
+    <!-- Bootstrap core CSS -->
+    <link href="~/vendor/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom fonts for this template -->
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans&display=swap" rel="stylesheet">
+
+    <!-- Layout -->
+    <link href="~/css/burgerMenu.css" rel="stylesheet" />
+    <link href="~/css/verticalNavLayout.css" rel="stylesheet" />
+
+    @if (ViewBag.IsPreview != null)
+    {
+        <link href="~/Theme/PreviewThemeCss/@ViewBag.themeId" rel="stylesheet" />
+        <link href="~/Theme/PreviewOverrideCss/@ViewBag.themeId" rel="stylesheet" />
+        <link href="~/Theme/PreviewThemeVariables/@ViewBag.themeId" rel="stylesheet" />
+    }
+    else
+    {
+        <!-- Project -->
+        <link href="~/Theme/ThemeCss/@_project.Id" rel="stylesheet" />
+        <link href="~/Theme/OverrideCss/@_project.Id" rel="stylesheet" />
+        <link href="~/Theme/ThemeVariables/@_project.Id" rel="stylesheet" />
+    }
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="logo-containter">
+                <a class="navigation-link" href="/@(_project.Prefix)/Home">
+                    <img class="brand-logo" src="~/content/GBT_ME_white_278x80.png" alt="" />
+                </a>
+            </div>
+            <div class="burger-menu-bars" onclick="burgerMenuChange(this)">
+                <div class="bar1">&nbsp;</div>
+                <div class="bar2">&nbsp;</div>
+                <div class="bar3">&nbsp;</div>
+            </div>
+        </div>
+    </header>
+    <main>
+        <nav>
+            @foreach (var page in settings.CustomPages.Where(c => c.IsVisible).OrderBy(m => m.ProjectPage.MenuPosition))
+            {
+                <a class="navigation-link" href="/@(_project.Prefix)/@(page.Slug)">@(page.Title)</a>
+            }
+        </nav>
+        <div class="main-content">
+            @RenderBody()
+        </div>
+    </main>
+
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <img src="~/content/dont_do_business_without_it_white.png" />
+        </div>
+        <!-- /.container -->
+    </footer>
+    <!-- Bootstrap core JavaScript -->
+    <script src="~/vendor/jquery/jquery.min.js"></script>
+    <script src="~/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/verticalMenuResize.js"></script>
+    <script>
+
+        (function () {
+
+            navMenuResize();
+
+        })();
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,36 @@
+﻿@model GoRegister.Areas.Admin.ViewModels.UserListViewModel
+
+@{
+
+}
+
+@* Breadcrumb changes commented for now *@
+@*<nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-controller="Projects" asp-action="Index">Home</a></li>
+            <li class="breadcrumb-item active" aria-current="Users">Users</li>
+        </ol>
+    </nav>*@
+
+<a asp-action="Create" class="btn btn-primary">Add User</a>
+
+<table class="table">
+    <thead>
+        <tr>
+            <td>Name</td>
+            <td>Email</td>
+            <td></td>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var user in Model.Users)
+        {
+        <tr>
+            <td>@user.FirstName @user.LastName</td>
+            <td>@user.Email</td>
+            <td><a asp-action="Edit" asp-route-id="@user.Id">Edit</a></td>
+            <td><a asp-action="ChangePassword" asp-controller="Users" asp-route-id="@user.Id">Change Password</a></td>
+        </tr>
+        }
+    </tbody>
+</table>

@@ -1,0 +1,52 @@
+﻿@*MRF Changes
+    Modified Date : 16th September 2022
+    Modified By : Mandar.Khade@amexgbt.com
+    Team member : Harish.Rame@amexgbt.com
+    JIRA Ticket No : GoRegister/GOR-212,GOR-221   *@
+
+@model GoRegister.ApplicationCore.Domain.Projects.Models.Response
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<div id="page-config" data-page="projects-index"></div>
+
+
+<div class="card">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+            <h2>MRF Forms</h2>
+        </div>
+
+        <table class="table table-bordered" id="dataTable">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Client</th>
+                    <th>Date Created</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.AllProjects)
+                {
+                    <tr>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Name)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.ClientName)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.DateCreated)
+                        </td>
+                        <td>
+                            <a class="btn btn-outline-primary" asp-action="App" asp-controller="Home" asp-route-path="themes" asp-route-projectid="@item.Id">Open</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

@@ -1,0 +1,51 @@
+﻿@model IEnumerable<GoRegister.ApplicationCore.Domain.Registration.Models.RegistrationTypeModel>
+
+@{
+    ViewData["Title"] = "Registration Types";
+}
+
+<div class="d-flex justify-content-between align-items-center">
+    <h1>Registration Types</h1>
+    <partial name="_CreateButtonPartial" />
+</div>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Name)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Capacity)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.DelegateUsers)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Name)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Capacity)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.DelegateUsers.Count)
+                </td>
+                <td class="text-right">
+                    <partial name="_TableButtonsPartial" model="@item.Id" />
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@section scripts
+{
+    <partial name="_DeleteConfirmPartial" />
+}

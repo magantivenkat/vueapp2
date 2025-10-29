@@ -1,0 +1,234 @@
+﻿@*MRF Changes : Create MRF form
+    Modified Date : 16th September 2022
+    Modified By : Mandar.Khade@amexgbt.com
+    Team member : Harish.Rame@amexgbt.com
+    JIRA Ticket No : GoRegister/GOR-213    *@
+
+@model GoRegister.ApplicationCore.Domain.Projects.Commands.CreateProject.CreateProjectCommand
+@using GoRegister.ApplicationCore.Domain.Projects.Enums
+@{
+    ViewData["Title"] = "Create Project";
+}
+
+
+@if (Model.IsTemplate)
+{
+    <h1>Create Template</h1>
+}
+else
+{
+    <h1>Create MRF</h1>
+}
+
+
+<hr />
+
+<div id="page-config" data-page="projects-create"></div>
+
+
+<form asp-action="Create" autocomplete="off">
+    <input type="hidden" asp-for="ProjectType" />
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <div class="row justify-content-around">
+        <div class="col-5">
+            <div class="form-group">
+
+                @if (Model.IsTemplate)
+                {
+                    <label class="control-label">Template Name</label> <help-text>Some help text here....</help-text>
+                }
+                else
+                {
+                    <label asp-for="Name" class="control-label"></label> <help-text>Some help text here....</help-text>
+                }
+
+                <input asp-for="Name" class="form-control" required="required" placeholder="Enter MRF form name" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+
+            <h3 class="border-bottom pt-4">Who's it for</h3>
+            <div class="form-group">
+
+                @if (Model.IsTemplate)
+                {
+                    <select asp-for="ClientId" asp-items="Model.ClientList" class="form-control">
+                        <option selected value="">Select a client</option>
+                    </select>
+                    <span asp-validation-for="ClientId" class="text-danger"></span>
+                }
+                else
+                {
+                    <input asp-for="ClientListMRF[0].Text" class="form-control" readonly />
+                    <select asp-for="ClientId" asp-items="Model.ClientListMRF" hidden class="form-control">
+                    </select>
+                    <span asp-validation-for="ClientId" class="text-danger"></span>
+                }
+            </div>
+
+            @if (Model.IsCloning)
+            {
+                <h3 class="border-bottom pt-4">Cloned Project</h3>
+                <strong>@Model.CloneProjectName</strong>
+                <input type="hidden" asp-for="CloneProjectId" />
+            }
+            else
+            {
+                <h3 class="border-bottom pt-4">Template</h3>
+                <div class="form-group">
+                    <select asp-for="TemplateId" asp-items="Model.ProjectTemplates" class="form-control">
+                        <option selected value="">Select a template to start from</option>
+                    </select>
+                    <span asp-validation-for="TemplateId" class="text-danger"></span>
+                </div>
+            }
+            <div>
+
+
+                @if (Model.IsTemplate)
+                {
+
+                    <div class="form-check">
+                        <input asp-for="CloneModel.CloneTheme" class="form-check-input" type="checkbox" />
+                        <label asp-for="CloneModel.CloneTheme" class="form-check-label"></label>
+                    </div>
+                    @*<div class="form-check">
+                        <input asp-for="CloneModel.CloneRegistration" class="form-check-input" type="checkbox">
+                        <label asp-for="CloneModel.CloneRegistration" class="form-check-label"></label>
+                    </div>*@
+                    @*<div class="form-check">
+                        <input asp-for="CloneModel.CloneRegistrationTypes" class="form-check-input" type="checkbox">
+                        <label asp-for="CloneModel.CloneRegistrationTypes" class="form-check-label"></label>
+                    </div>
+                    <div class="form-check">
+                        <input asp-for="CloneModel.ClonePages" class="form-check-input" type="checkbox">
+                        <label asp-for="CloneModel.ClonePages" class="form-check-label"></label>
+                    </div>
+                    <div class="form-check">
+                        <input asp-for="CloneModel.CloneMenuItems" class="form-check-input" type="checkbox">
+                        <label asp-for="CloneModel.CloneMenuItems" class="form-check-label"></label>
+                    </div>*@
+                }
+                else
+                {
+
+                    <div class="form-check">
+                        <input asp-for="CloneModel.CloneTheme" class="form-check-input" type="checkbox" />
+                        <label asp-for="CloneModel.CloneTheme" class="form-check-label"></label>
+                    </div>
+                    @*<div class="form-check">
+                        <input asp-for="CloneModel.CloneRegistration" class="form-check-input" type="checkbox">
+                        <label asp-for="CloneModel.CloneRegistration" class="form-check-label"></label>
+                    </div>*@
+
+                }
+            </div>
+
+
+            <h3 class="border-bottom pt-4">About</h3>
+            <div class="">
+                
+                    <div class="row pt-2" id="section-urlpath">
+                        <div class="col">
+                            <label asp-for="UrlPathHost" class="control-label"></label>
+                            <select asp-for="UrlPathHost" hidden asp-items="Model.DomainsListMRF" class="form-control"></select>
+                            <span asp-validation-for="UrlPathHost" class="text-danger"></span>
+                            <input asp-for="DomainsListMRF[0].Text" readonly class="form-control" />
+
+                        </div>
+                        <span class="align-self-end" style="line-height: 38px;">/</span>
+                        <div class="col">
+
+                            <label asp-for="PathPrefix" class="control-label"></label>
+                            <input asp-for="PathPrefix" class="form-control" readonly />
+                            <span asp-validation-for="PathPrefix" class="text-danger"></span>
+                        </div>
+
+                    </div>
+                
+            </div>
+
+            @*@if (Model.IsTemplate)
+            {
+                <div class="form-group">
+                    <label asp-for="ExternalReference" class="control-label"></label>
+                    <input asp-for="ExternalReference" class="form-control" />
+                    <span asp-validation-for="ExternalReference" class="text-danger"></span>
+                </div>
+            }*@
+
+        </div>
+        <div class="col-5">
+
+            @*@if (Model.IsTemplate)
+        {
+            <h3 class="border-bottom pt-4">When</h3>
+            <div class="form-group">
+                <label asp-for="Timezone" class="control-label"></label>
+                <select asp-for="Timezone" asp-items="Model.TimeZones" class="form-control"></select>
+                <span asp-validation-for="Timezone" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="StartDate" class="control-label"></label>
+                <input asp-for="StartDate" class="form-control" />
+                <span asp-validation-for="StartDate" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="EndDate" class="control-label"></label>
+                <input asp-for="EndDate" class="form-control" />
+                <span asp-validation-for="EndDate" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ArchiveDate" class="control-label"></label>
+                <input asp-for="ArchiveDate" class="form-control" />
+                <span asp-validation-for="ArchiveDate" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="DeleteDataDate" class="control-label"></label>
+                <input asp-for="DeleteDataDate" class="form-control" />
+                <span asp-validation-for="DeleteDataDate" class="text-danger"></span>
+            </div>
+        }*@
+
+            <h3 class="border-bottom pt-4">Contact</h3>
+
+           
+            <div class="form-group" id="section-emailtype-client">
+                <label asp-for="EmailAddress" class="control-label"></label>
+                <input asp-for="EmailAddress"  class="form-control" placeholder="Enter client email address" required="required" />
+                <span asp-validation-for="EmailAddress" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="EmailDisplayFrom" class="control-label"></label>
+                <input asp-for="EmailDisplayFrom" class="form-control" placeholder="Enter email display from name" required="required" />
+                <span asp-validation-for="EmailDisplayFrom" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="EmailReplyTo" class="control-label"></label>
+                <input asp-for="EmailReplyTo" class="form-control" />
+                <span asp-validation-for="EmailReplyTo" class="text-danger"></span>
+            </div>
+        </div>
+    </div>
+    <div class="row justify-content-center pt-2 pb-4">
+
+       
+        <div class="form-group">
+                        
+          <input type="submit" value="Create" class="btn btn-success" />
+            
+        </div>
+       
+
+        <div class="form-group pl-2">
+            <a class="btn btn-primary" asp-action="Index">Cancel</a>
+        </div>
+    </div>
+</form>
+
+@section scripts {
+
+    <partial name="_ValidationScriptsPartial" />
+
+}

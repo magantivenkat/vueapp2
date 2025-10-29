@@ -1,0 +1,96 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Remove="Domain\BulkUpload\MappingFiles\empty_file.xlsx" />
+    <None Remove="Domain\BulkUpload\MappingFiles\empty_header.xlsx" />
+    <None Remove="Domain\BulkUpload\MappingFiles\no_delegates.xlsx" />
+    <None Remove="Domain\BulkUpload\MappingFiles\valid.xlsx" />
+    <None Remove="Domain\BulkUpload\MappingFiles\valid_withoutRegistrationType.xlsx" />
+    <None Remove="Domain\BulkUpload\MappingFiles\valid_withRegistrationType.xlsx" />
+    <None Remove="Domain\BulkUpload\MappingFiles\valid_with_spacesandcases.xlsx" />
+    <None Remove="Domain\BulkUpload\ValidateFiles\cases_and_spaces_regtype.xlsx" />
+    <None Remove="Domain\BulkUpload\ValidateFiles\duplicate_emails.xlsx" />
+    <None Remove="Domain\BulkUpload\ValidateFiles\emails_exist_in_project.xlsx" />
+    <None Remove="Domain\BulkUpload\ValidateFiles\invalid_regtype.xlsx" />
+    <None Remove="Domain\BulkUpload\ValidateFiles\regtype1.xlsx" />
+    <None Remove="Domain\BulkUpload\ValidateFiles\regtype2.xlsx" />
+    <None Remove="Domain\BulkUpload\ValidateFiles\regtype3.xlsx" />
+    <None Remove="Domain\BulkUpload\ValidateFiles\valid.xlsx" />
+    <None Remove="Domain\BulkUpload\ValidateFiles\valid_single.xlsx" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Domain\BulkUpload\MappingFiles\empty_file.xlsx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Domain\BulkUpload\MappingFiles\empty_header.xlsx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Domain\BulkUpload\MappingFiles\no_delegates.xlsx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Domain\BulkUpload\MappingFiles\valid_withoutRegistrationType.xlsx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Domain\BulkUpload\MappingFiles\valid_withRegistrationType.xlsx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Domain\BulkUpload\MappingFiles\valid_with_spacesandcases.xlsx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Domain\BulkUpload\MappingFiles\valid.xlsx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Domain\BulkUpload\ValidateFiles\regtype3.xlsx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Domain\BulkUpload\ValidateFiles\regtype2.xlsx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Domain\BulkUpload\ValidateFiles\regtype1.xlsx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Domain\BulkUpload\ValidateFiles\emails_exist_in_project.xlsx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Domain\BulkUpload\ValidateFiles\duplicate_emails.xlsx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Domain\BulkUpload\ValidateFiles\invalid_regtype.xlsx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Domain\BulkUpload\ValidateFiles\cases_and_spaces_regtype.xlsx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Domain\BulkUpload\ValidateFiles\valid_single.xlsx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Domain\BulkUpload\ValidateFiles\valid.xlsx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="AutoFixture" Version="4.11.0" />
+    <PackageReference Include="FluentAssertions" Version="5.10.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.9.1" />
+    <PackageReference Include="Moq" Version="4.13.1" />
+    <PackageReference Include="xunit" Version="2.4.1" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="coverlet.collector" Version="1.3.0">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\GoRegister.TestingCore\GoRegister.TestingCore.csproj" />
+    <ProjectReference Include="..\src\GoRegister.ApplicationCore\GoRegister.ApplicationCore.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Domain\Projects\Commands\" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,21 @@
+﻿:root {
+    // body defaults
+    --body-color: $body-color;
+    --body-bg: $body-bg;
+    --body-font: $font-family-sans-serif;
+    // headings
+    --h-color: var(--body-color);
+    --h-font: var(--body-font);
+    //--h1-color
+    //--h2-color
+    //--h3-color
+    //--h4-color
+    //--h5-color
+    //--h6-color
+    // link
+    --link-color: #007bff;
+    --link-hover-color: #0056b3;
+    --link-hover-decoration: underline;
+    // forms
+    --label-color: $body-color;
+}

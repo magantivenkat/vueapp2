@@ -1,0 +1,130 @@
+﻿@model GoRegister.ApplicationCore.Domain.Clients.ClientModel
+
+<link href="/assets/vendor/codemirror/lib/codemirror.css" rel="stylesheet" />
+@{ string currentAction = ViewContext.RouteData.Values["Action"].ToString();
+                bool isEdit = currentAction.ToLower() == "edit" ? true : false; }
+
+<div asp-validation-summary="All" class="text-danger"></div>
+
+<div id="page-config" data-page="client-create-edit"></div>
+
+<div class="card">
+    <div class="card-header">
+        <h4>@currentAction Client</h4>
+    </div>
+    <div class="card-body">
+        <form asp-action="Save" asp-controller="Client" asp-area="Admin">
+            <input asp-for="Id" type="hidden" />
+            <input asp-for="DateCreated" type="hidden" />
+            <input asp-for="FormAction" value="@currentAction" type="hidden" />
+            <div class="row">
+                <div class="col-md-2">
+                    <label asp-for="Name" class="control-label"></label>
+                </div>
+
+                <div class="col-md-3">
+                    <input asp-for="Name" class="form-control" placeholder="Client Name" />
+                    <span asp-validation-for="Name" class="text-danger"></span>
+                </div>
+
+                @{ if (!isEdit)
+                    {
+        <div class="col-md-2">
+            <label asp-for="Email" class="control-label"></label>
+        </div>
+
+                        <div class="col-md-3">
+                            <input asp-for="Email" class="form-control" placeholder="Client Email" />
+                            <span asp-validation-for="Email" class="text-danger"></span>
+                        </div> } }
+            </div>
+            <br />
+
+            <div class="row">
+                <div class="col-md-12 d-flex justify-content-center">
+                    <button class="btn btn-success btn-sm" type="submit">Save Client</button>
+                </div>
+            </div>
+
+            <br />
+            <div class="row">
+                <div class="col-md-12 d-flex justify-content-center">
+                    @if (ViewBag.ClientExist != null && ViewBag.ClientExist != string.Empty)
+                    {
+        <div class="alert alert-danger" role="alert">
+            @ViewBag.ClientExist
+        </div>}
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<br />
+@{ if (isEdit)
+                {
+    <div class="card">
+        <div class="card-header">
+            <h4>Client Emails</h4>
+            @*<button class="btn btn-primary" id="AddClientEmailButton">Add Client Email</button>*@
+        </div>
+
+        <div class="card-body">
+            <form id="AddClientEmailForm">
+                <div class="row">
+                    <div class="col-md-6">
+                        <input asp-for="Email" class="form-control" placeholder="Client Email" />
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <button id="AddClientEmailFormCancelButton" class="btn btn-danger btn-sm" type="reset">Cancel</button>
+                        <button class="btn btn-success btn-sm" type="submit">Add Email</button>
+                    </div>
+                </div>
+                <br />
+                <div id="divEmailExist" class="row d-none">
+                    <div class="col-md-12 d-flex justify-content-center">
+                        <div class="alert alert-danger" role="alert">
+                            Email already exists. Please try adding different email.
+                        </div>
+                    </div>
+                </div>
+
+                <table class="table table-hover table-bordered">
+                    <thead class="table-dark">
+                        <tr>
+                            <td>Email</td>
+                            <td>Edit</td>
+                            <td>Delete</td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{ foreach (var email in Model.ClientEmails)
+                            {
+            <tr data-emailId="@email.Id">
+                <td>@email.Email</td>
+                <td><i class="fa fa-pencil-alt client-theme-edit"></i></td>
+                <td><i data-emailId="@email.Id" class="fa fa-trash client-theme-delete"></i></td>
+            </tr> }}
+                    </tbody>
+                </table>
+
+            </form>
+
+            <br />
+
+            
+
+            <div style="float:right">
+                <h2><a asp-area="Admin" class="btn btn-primary btn-sm" asp-controller="Admin" asp-action="CreateEditTheme" asp-route-clientid="@Model.Id">Create Client Specific Theme</a></h2>
+            </div>
+        </div>
+
+    </div> } }
+
+@section scripts
+{
+    <partial name="_ValidationScriptsPartial" />
+
+}
+

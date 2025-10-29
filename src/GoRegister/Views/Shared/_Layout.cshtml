@@ -1,0 +1,75 @@
+﻿@using GoRegister.ApplicationCore.Domain.Settings.Services
+@using Newtonsoft.Json;
+
+@inject GoRegister.ApplicationCore.Framework.ProjectTenant _project
+@inject IProjectSettingsAccessor settingsAccessor
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Xsrf
+@functions{
+    public string GetAntiXsrfRequestToken()
+    {
+        return Xsrf.GetAndStoreTokens(Context).RequestToken;
+    }
+}
+
+@{
+    var settings = await settingsAccessor.GetAsync();
+    var projectTheme = settings.ProjectThemes.LastOrDefault();
+
+    var data = JsonConvert.SerializeObject(await settingsAccessor.GetLanguages(),
+    new JsonSerializerSettings
+            {
+                ContractResolver = new Newtonsoft.Json.Serialization.CamelCasePropertyNamesContractResolver()
+            });
+
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <partial name="_GoRegisterHeader" />
+</head>
+<body>
+    <input type="hidden" name="__RequestVerificationToken" value="@GetAntiXsrfRequestToken()">
+    <header>
+        <div id="language-app" data-languages="@data"></div>
+        <div id="gr-header-container" class="gr-header-container ck-content">            
+            @Html.Raw(projectTheme.HeaderHtml)           
+        </div>
+        @*<nav class="navbar navbar-light navbar-expand-lg gr-navbar">
+            <div class="container">
+                @if (!string.IsNullOrWhiteSpace(projectTheme.LogoUrl))
+                {
+                    <a asp-action="Index" asp-controller="Home" class="navbar-brand">
+                        <img src="@projectTheme.LogoUrl" alt="logo" class="gr-logo img-fluid" id="gr-logo">
+                    </a>
+                }
+                @await Component.InvokeAsync("Menu")
+            </div>
+        </nav>*@
+    </header>
+
+    <main>
+        <div class="main-content">
+            @RenderBody()
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <div id="gr-footer-container" class="gr-footer-container ck-content">
+            @Html.Raw(projectTheme.FooterHtml)
+        </div>
+        <!-- /.container -->
+    </footer>
+
+    <partial name="_PrivacyPolicy" />
+
+    <!-- Bootstrap core JavaScript -->
+    <script src="/assets/vendor/jquery/dist/jquery.min.js"></script>
+    <script src="/assets/vendor/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/assets/js/site.js"></script>
+    <script src="/assets/js/previewtheme.js"></script>
+  
+    @RenderSection("scripts", required: false)
+    <script>@Html.Raw(projectTheme.FooterScripts)</script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+﻿@*MRF Changes : Rename page name, Hide bulk upload pages button
+    Modified Date : 30th September 2022
+    Modified By : Mandar.Khade @amexgbt.com
+    Team member : Harish.Rane @amexgbt.com
+    JIRA Ticket No : GoRegister/GOR-236, GoRegister/GOR-235 *@
+
+<div class="float-right">
+    @*<spa-proj spa-path="delegates/bulkupload" class="btn btn-outline-primary">Bulk Insert</spa-proj>*@
+    <a-proj asp-action="Create" class="btn btn-primary">Add Users</a-proj>
+</div>
+@*<h1>Attendees</h1>*@
+<h1>MRF Client Users</h1>
+@await Html.PartialAsync("~/Areas/Admin/Views/Shared/_DelegateList.cshtml")
+
+@section scripts
+{
+    <script id="script-delegates" src="/assets/admin/js/app/delegates-datatable.js" asp-append-version="true" data-postUrl="@Url.ProjectAction("LoadData", "Delegates")"></script>
+
+}

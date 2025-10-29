@@ -1,0 +1,10 @@
+﻿@model GoRegister.ApplicationCore.Domain.Reports.Models.ReportViewModel
+
+<div id="report-app"
+     data-initial-data="@Newtonsoft.Json.JsonConvert.SerializeObject(Model,new Newtonsoft.Json.JsonSerializerSettings { ContractResolver = new Newtonsoft.Json.Serialization.CamelCasePropertyNamesContractResolver()})"
+     data-getData="@Url.ProjectAction("GetData")"
+     data-exportData="@Url.ProjectAction("ExportReport")"
+     data-getSummaryData="@Url.ProjectAction("GetSummaryData")"
+     data-saveReportUrl="@Url.ProjectAction("SaveReport")"
+     data-sheetsShareUrl="@Url.ProjectAction("GetSheetsShareUrl", new { id = Model.Id } )">
+</div>

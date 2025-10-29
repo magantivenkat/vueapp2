@@ -1,0 +1,23 @@
+﻿@model GoRegister.ApplicationCore.Domain.Registration.Models.RegistrationSummaryModel
+
+<vc:delegate user-id="Model.UserId" />
+
+<div class="">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Field</th>
+                <th>Response</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var fs in Model.Fields)
+            {
+                <tr>
+                    <td>@fs.Name</td>
+                    <td>@fs.Value</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

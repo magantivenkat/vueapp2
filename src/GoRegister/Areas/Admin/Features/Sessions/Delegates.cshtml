@@ -1,0 +1,9 @@
+﻿@model GoRegister.ApplicationCore.Domain.Sessions.ViewModels.SessionCreateEditViewModel
+<h1>@Model.Name</h1>
+@await Html.PartialAsync("~/Areas/Admin/Views/Shared/_DelegateList.cshtml")
+
+@section scripts
+{
+    <script id="script-delegates" src="/assets/admin/js/app/delegates-datatable.js" asp-append-version="true" data-postUrl="@Url.ProjectAction("LoadData", "Delegates", new { sessionId = Model.Id })"></script>
+}
+

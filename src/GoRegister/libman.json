@@ -1,0 +1,39 @@
+{
+  "version": "1.0",
+  "defaultProvider": "cdnjs",
+  "libraries": [
+    {
+      "provider": "jsdelivr",
+      "library": "sweetalert2@9.6.0",
+      "destination": "wwwroot/assets/sweetalert2/"
+    },
+    {
+      "library": "bootbox.js@5.4.0",
+      "destination": "wwwroot/assets/bootbox.js/"
+    },
+    {
+      "library": "datatables@1.10.19",
+      "destination": "wwwroot/assets/datatables/"
+    },
+    {
+      "library": "Ladda@1.0.6",
+      "destination": "wwwroot/assets/vendor/Ladda/"
+    },
+    {
+      "library": "select2@4.1.0-beta.1",
+      "destination": "wwwroot/assets/select2/"
+    },
+    {
+      "library": "select2-bootstrap-theme@0.1.0-beta.10",
+      "destination": "wwwroot/assets/select2-bootstrap-theme/"
+    },
+    {
+      "library": "datatables.net-rowreorder@1.2.7",
+      "destination": "wwwroot/assets/datatables/datatables.net-rowreorder/"
+    },
+    {
+      "library": "datatables.net-rowreorder-bs4@1.2.7",
+      "destination": "wwwroot/assets/datatables/datatables.net-rowreorder-bs4/"
+    }
+  ]
+}

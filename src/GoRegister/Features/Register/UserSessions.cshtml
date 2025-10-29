@@ -1,0 +1,67 @@
+﻿@model List<GoRegister.ApplicationCore.Domain.Sessions.ViewModels.SessionModel>
+
+@{
+    ViewData["Title"] = "User Sessions";
+
+}
+
+<div class="container bg-light">
+    <div>
+        <h1> My Sessions </h1>
+        <hr />
+    </div>
+
+    @{
+        var dates = @Model.OrderBy(x => x.DateStartUtc).Select(x => x.DateStartUtc.Date.ToString("dddd, dd MMMM yyyy")).Distinct().ToList();
+        var count = 0;
+    }
+
+    <ul class="nav nav-tabs nav-pills nav-fill border" id="myTab" role="tablist">
+        @foreach (var date in dates)
+        {
+            var active = count == 0 ? "active" : "";
+            var tab = "tab" + count;
+            <li class="nav-item" role="presentation">
+                <a class="nav-link @active" id="tabHeader-@count" data-toggle="tab" href="#@tab" role="tab" aria-controls="home" aria-selected="true">@date</a>
+            </li>
+            count++;
+
+
+        }
+    </ul>
+    <div class="tab-content" id="myTabContent">
+        @{ count = 0;
+        }
+
+        @foreach (var date in dates)
+        {
+            var active = count == 0 ? "active" : "";
+            var tab = "tab" + count;
+            var sessionList = @Model.OrderBy(x => x.DateStartUtc).Where(x => x.DateStartUtc.Date.ToString("dddd, dd MMMM yyyy") == date).ToList();
+            <div class="tab-pane fade show @active" id="@tab" role="tabpanel" aria-labelledby="home-tab">
+
+                @foreach (var session in sessionList)
+                {
+                    <div class="row">
+                        <div class="card-body border">
+                            <div class="row">
+                                <div class="col-3 h3 text-center align-self-center"><span class="text-success"> @session.DateStartUtc.ToString("HH:mm") </span> - <span class="text-danger">@session.DateEndUtc.ToString("HH:mm")</span></div>
+
+                                <div class="col-7"><p class="h1 text-primary">@session.Name</p> <p class="h3 text-secondary"> @session.Description</p></div>
+                                @{
+                                    if (session.MeetingLink != null)
+                                    {
+                                        <div class="col-2 float-right align-self-center">
+                                            <a class="btn btn-primary" href="@session.MeetingLink" target="_blank">Join</a>
+                                        </div>
+                                    }
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+            count++;
+        }
+    </div>
+</div>

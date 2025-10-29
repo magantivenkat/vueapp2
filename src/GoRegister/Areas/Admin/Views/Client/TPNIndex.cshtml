@@ -1,0 +1,24 @@
+﻿
+<h1>TPN Clients</h1>
+<div class="table-responsive">
+    <table class="table table-bordered" id="dataTable">
+        <thead>
+            <tr>
+                <th><span style="margin-left: 25px">&nbsp;&nbsp;Name</span></th>
+                <th></th>
+            </tr>
+        </thead>
+        <tfoot>
+            <tr>
+                <th><span style="margin-left: 25px">&nbsp;&nbsp;Name</span></th>
+                <th></th>
+            </tr>
+        </tfoot>
+    </table>
+</div>
+
+@section scripts
+{
+    <script id="script-clients-datatable" src="/assets/admin/js/app/tpnclients-datatable.js" asp-append-version="true" data-postUrl="@Url.ProjectAction("LoadData", "Client", new {area="Admin"})"></script>
+
+}
