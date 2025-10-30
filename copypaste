@@ -1,0 +1,148 @@
+using MediatR;
+using Microsoft.AspNetCore.Mvc;
+
+namespace GoRegister.Features.Register
+{
+    public partial class RegisterController : Controller
+    {
+        // POST /Register/SetLanguage
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SetLanguage(string languageCode, string? returnUrl)
+        {
+            if (string.IsNullOrWhiteSpace(languageCode))
+                return BadRequest("Language is required.");
+
+            await _mediator.Send(new SetLanguageCommand(languageCode));
+
+            if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl))
+                return LocalRedirect(returnUrl);
+
+            return RedirectToAction(nameof(Index));
+        }
+    }
+}
+
+
+********************************************************
+
+public record SetLanguageCommand(string LanguageCode) : IRequest<Unit>;
+
+public sealed class SetLanguageHandler : IRequestHandler<SetLanguageCommand, Unit>
+{
+    private readonly IHttpContextAccessor _http; // or inject your repo to persist per user
+
+    public SetLanguageHandler(IHttpContextAccessor http) => _http = http;
+
+    public Task<Unit> Handle(SetLanguageCommand request, CancellationToken ct)
+    {
+        // Store in session (simple). If you want persistence, save to DB here instead.
+        _http.HttpContext!.Session.SetString("preferredLanguage", request.LanguageCode);
+        return Task.FromResult(Unit.Value);
+    }
+}
+********************************************************
+
+@{
+    var currentLang = (string)(Model?.User?.Model?["preferredLanguage"] ?? "en-US");
+    var returnUrl = Url.Action("Index", "Register", new { typeId = Model?.User?.RegistrationTypeId });
+}
+
+<form asp-controller="Register"
+      asp-action="SetLanguage"
+      method="post"
+      id="langForm"
+      class="mb-2">
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="returnUrl" value="@returnUrl" />
+
+    <select name="languageCode"
+            class="form-control form-control-sm"
+            onchange="document.getElementById('langForm').submit()">
+        @foreach (var lang in Model.LookupData.Languages)
+        {
+            var selected = string.Equals(lang.Value, currentLang, StringComparison.OrdinalIgnoreCase) ? "selected" : null;
+            <option value="@lang.Value" selected="@selected">@lang.Text</option>
+        }
+    </select>
+</form>
+
+
+*******************************************
+
+public class QueryHandler : IRequestHandler<Query, Response>
+{
+    private readonly ApplicationDbContext _db;
+    private readonly ICurrentUserAccessor _currentUserAccessor;
+    private readonly IDelegateUserCacheService _delegateUserCacheService;
+    private readonly ILiquidTemplateManager _liquidTemplateManager;
+    private readonly IRegistrationService _registrationService;
+    private readonly IFormService _formService;
+    private readonly IHttpContextAccessor _http; // <-- add
+
+    public QueryHandler(
+        ApplicationDbContext db,
+        ICurrentUserAccessor currentUserAccessor,
+        IDelegateUserCacheService delegateUserCacheService,
+        ILiquidTemplateManager liquidTemplateManager,
+        IRegistrationService registrationService,
+        IFormService formService,
+        IHttpContextAccessor httpContextAccessor) // <-- add
+    {
+        _db = db;
+        _currentUserAccessor = currentUserAccessor;
+        _delegateUserCacheService = delegateUserCacheService;
+        _liquidTemplateManager = liquidTemplateManager;
+        _registrationService = registrationService;
+        _formService = formService;
+        _http = httpContextAccessor; // <-- add
+    }
+
+    public async Task<Response> Handle(Query request, CancellationToken cancellationToken)
+    {
+        var response = new Response();
+
+        if (_currentUserAccessor.Get.Identity.IsAuthenticated)
+        {
+            var userId = _currentUserAccessor.GetUserId().Value;
+            var delegateUser = await _db.Delegates
+                .Include(e => e.ApplicationUser)
+                .Include(e => e.RegistrationType)
+                    .ThenInclude(e => e.RegistrationPath)
+                .FirstOrDefaultAsync(e => e.Id == userId);
+
+            var regStatus = (ApplicationCore.Data.Enums.RegistrationStatus)delegateUser.RegistrationStatusId;
+            if (regStatus == ApplicationCore.Data.Enums.RegistrationStatus.Invited)
+            {
+                if (!delegateUser.IsTest && !_registrationService.CanRegister(delegateUser.RegistrationType))
+                {
+                    response.Status = ResponseStatus.RegistrationClosed;
+                    return response;
+                }
+
+                var formModel = await _formService.GetRegistrationForm();
+                var formResponse = await _formService.GetUserResponseModel(formModel.Form.Id, userId);
+
+                // 👇 read preferred language (Session fallback to "en-US")
+                var lang = _http.HttpContext?.Session?.GetString("preferredLanguage") ?? "en-US";
+
+                // 🔴 IMPORTANT: use an overload that applies localization on the server
+                // e.g., _formService.GetFormDisplayModel(formModel, formResponse.Value, lang)
+                var model = await _formService.GetFormDisplayModel(formModel, formResponse.Value, lang);
+
+                response.Status = ResponseStatus.DisplayRegistration;
+                response.RegisterModel = model;
+                return response;
+            }
+
+            // ... rest unchanged ...
+        }
+
+        // ... existing unauthenticated branch unchanged ...
+        return null;
+    }
+}
+
+
+*****************************************************************8
+
