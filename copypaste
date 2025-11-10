@@ -1,414 +1,222 @@
-/* MRF Changes: Clear first 3 entities of on User MRF Registration form
-Modified Date: 18th October 2022
-Modified By: Mandar.Khade@amexgbt.com
-Team member: Harish.Rane@amexgbt.com
-JIRA Ticket No: GoRegister / GOR - 238 - New */
-
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using GoRegister.ApplicationCore.Data;
-using GoRegister.ApplicationCore.Domain.Registration.Services;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
-using System.Linq.Expressions;
-using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
-using GoRegister.ApplicationCore.Domain.Registration;
-using GoRegister.ApplicationCore.Domain.Registration.Framework;
-using GoRegister.ApplicationCore.Domain.Registration.Framework.Builder;
-using MediatR;
-using Microsoft.AspNetCore.Authorization;
-using GoRegister.ApplicationCore.Framework.Domain;
-using GoRegister.ApplicationCore.Domain.Registration.Commands;
-using GoRegister.ApplicationCore.Domain.Registration.Queries;
-using GoRegister.Framework.MVC;
-using GoRegister.ApplicationCore.Data.Enums;
-using System.Linq;
-using GoRegister.ApplicationCore.Data.Models;
-
-namespace GoRegister.Features.Register
-{
-    public class RegisterController : Controller
-    {
-        private readonly IFormService _formService;
-        private readonly ApplicationDbContext _context;
-        private readonly IRegistrationService _registrationService;
-
-        private readonly IMediator _mediator;
-
-        public RegisterController(
-            ApplicationDbContext context,
-            IFormService formService, IRegistrationService registrationService, IMediator mediator)
-        {
-            _context = context;
-            _formService = formService;
-            _registrationService = registrationService;
-            _mediator = mediator;
-        }
-
-        [HttpGet]
-        [Route("~/MRF")]
-        public async Task<IActionResult> Index(int? typeId)
-        {
-            var query = new IndexHandler.Query()
-            {
-                RegistrationTypeId = typeId
-            };
-
-            var result = await _mediator.Send(query);
-
-            if (result.Status == IndexHandler.ResponseStatus.DisplayRegistration)
-            {
-
-                string keyId = string.Empty;
-
-                var formModel = await _formService.GetRegistrationForm();
-                       
-                foreach (var item in formModel.Form.RegistrationPages)
-                {                    
-                     keyId = item.Fields.FirstOrDefault(m => m.FieldTypeId == FieldTypeEnum.Textbox && m.DataTag.ToLower() == "companyname").Id.ToString();
-                     break;
-                }            
-
-                result.RegisterModel.User.Model.Clear();
-
-
-                if (keyId != string.Empty)
-                {
-                    var project = await _context.Projects.FirstOrDefaultAsync(e => e.Id == formModel.Form.ProjectId);
-                    var client = await _context.Clients.FirstOrDefaultAsync(e => e.ClientUuid == project.Prefix);
-                    result.RegisterModel.User.Model[keyId] = client.Name;
-                }
-
-                foreach (var item in formModel.Form.RegistrationPages)
-                {
-                    foreach (var itemField in item.Fields)
-                    {
-                        if (itemField.IsHidden == true && itemField.IsStandardField == true)
-                        {
-                            var keyIdField = itemField.Id.ToString();
-                            //result.RegisterModel.User.Model[keyIdField] = "dummy";
-                            result.RegisterModel.User.Model[keyIdField] = itemField.DefaultValue ?? "dummy";
-                        }
-                    }
-             
-                }
-
-                return View(result.RegisterModel);
-            }
-
-            switch (result.Status)
-            {
-                case IndexHandler.ResponseStatus.DisplayRegistration:
-                    return View("Index", result.RegisterModel);
-                case IndexHandler.ResponseStatus.DisplayRegistrationStatusPage:
-                    return StatusPageResult(result.RegistrationStatusModel);
-                case IndexHandler.ResponseStatus.NotFound:
-                    return NotFound();
-                case IndexHandler.ResponseStatus.RegistrationClosed:
-                    return NotFound();
-                default:
-                    return NotFound();
-            }
-        }
-
-        private IActionResult StatusPageResult(IndexHandler.RegistrationStatusModel registrationStatusModel)
-        {
-            return View("StatusPage", registrationStatusModel);
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> Post([FromBody] FormModel model)
-        {
-            var query = new RegisterHandler.Query { Model = model };
-            var result = await _mediator.Send(query);
-            return Json(result);       
-        }
-
-        [Authorize]
-        public async Task<IActionResult> Decline()
-        {
-            var result = await _mediator.Send(new DeclineHandler.Query());
-            if (result.Failed)
-            {
-                return Content(((Error.Invalid)result.Error).Message);
-            }
-
-            return View(result.Value.Model);
-        }
-
-        [HttpPost, Authorize]
-        public async Task<IActionResult> Decline([FromBody] FormModel model)
-        {
-            var query = new DeclineRegistration.Command { Model = model };
-            var result = await _mediator.Send(query);
-            return result.ToJsonResult();
-        }
-        
-        [Authorize]
-        public async Task<IActionResult> Cancel()
-        {
-            var result = await _mediator.Send(new CancelHandler.Query());
-            if (result.Failed)
-            {
-                return Content(((Error.Invalid)result.Error).Message);
-            }
-
-            return View(result.Value.Model);
-        }
-
-        [HttpPost, Authorize]
-        public async Task<IActionResult> Cancel([FromBody] FormModel model)
-        {
-            var query = new CancelRegistration.Command { Model = model };
-            var result = await _mediator.Send(query);
-            return result.ToJsonResult();
-        }
-
-        public IActionResult Preview()
-        {
-            return View();
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> PreviewModel(int id, [FromBody] FormEditorUpdateModel vm)
-        {
-            var previewResult = await _registrationService.SaveForm(id, vm);
-
-            var regTypeId = (await _context.RegistrationTypes.FirstAsync()).Id;
-            // build reg model
-            var model = await _formService.GenerateFormSchema(regTypeId, previewResult);
-            var dict = new Dictionary<int, FormSchema>();
-            dict.Add(regTypeId, model);
-            return Ok(dict);
-        }
-
-        [HttpPost]
-        [Route("~/ChangeLanguage")]
-        public async Task<IActionResult> ChangeLanguage([FromBody] FormModel model)
-        {
-            var query = new RegisterHandler.Query { Model = model };
-            var result = await _mediator.Send(query);
-            return Json(result);
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> SetLanguage(string languageCode, string? returnUrl)
-        {
-            if (string.IsNullOrWhiteSpace(languageCode))
-                return BadRequest("Language is required.");
-
-            await _mediator.Send(new SetLanguageCommand(languageCode));
-
-            if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl))
-                return LocalRedirect(returnUrl);
-
-            return RedirectToAction(nameof(Index));
-        }
-
-
-    }
-
-    public class ControllerModelUpdater : IUpdateModel
-    {
-        private readonly Controller _controller;
-        private readonly IFormCollection _formCollection;
-
-        public ControllerModelUpdater(Controller controller)
-        {
-            _controller = controller;
-        }
-
-        public ControllerModelUpdater(Controller controller, IFormCollection formCollection) : this(controller)
-        {
-            _formCollection = formCollection;
-        }
-
-        public ModelStateDictionary ModelState => _controller.ModelState;
-        public IFormCollection Form => _formCollection ?? _controller.HttpContext.Request.Form;
-
-        public Task<bool> TryUpdateModelAsync<TModel>(TModel model) where TModel : class
-        {
-            return _controller.TryUpdateModelAsync<TModel>(model);
-        }
-
-        public Task<bool> TryUpdateModelAsync<TModel>(TModel model, string prefix) where TModel : class
-        {
-            return _controller.TryUpdateModelAsync<TModel>(model, prefix);
-        }
-
-        public Task<bool> TryUpdateModelAsync<TModel>(TModel model, string prefix, params Expression<Func<TModel, object>>[] includeExpressions) where TModel : class
-        {
-            return _controller.TryUpdateModelAsync<TModel>(model, prefix, includeExpressions);
-        }
-
-        public bool TryValidateModel(object model)
-        {
-            return _controller.TryValidateModel(model);
-        }
-
-        public bool TryValidateModel(object model, string prefix)
-        {
-            return _controller.TryValidateModel(model, prefix);
-        }
-    }
-
-
-    public class UpdateModel
-    {
-        public IFormCollection FormCollection { get; set; }
-
-    }
-}
-
-*****************************************************************************************************************************************************************
-using MediatR;
-using Microsoft.AspNetCore.Mvc;
-
-namespace GoRegister.Features.Register
-{
-    public partial class RegisterController : Controller
-    {
-        // POST /Register/SetLanguage
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> SetLanguage(string languageCode, string? returnUrl)
-        {
-            if (string.IsNullOrWhiteSpace(languageCode))
-                return BadRequest("Language is required.");
-
-            await _mediator.Send(new SetLanguageCommand(languageCode));
-
-            if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl))
-                return LocalRedirect(returnUrl);
-
-            return RedirectToAction(nameof(Index));
-        }
-    }
-}
-
-
-********************************************************
-
-public record SetLanguageCommand(string LanguageCode) : IRequest<Unit>;
-
-public sealed class SetLanguageHandler : IRequestHandler<SetLanguageCommand, Unit>
-{
-    private readonly IHttpContextAccessor _http; // or inject your repo to persist per user
-
-    public SetLanguageHandler(IHttpContextAccessor http) => _http = http;
-
-    public Task<Unit> Handle(SetLanguageCommand request, CancellationToken ct)
-    {
-        // Store in session (simple). If you want persistence, save to DB here instead.
-        _http.HttpContext!.Session.SetString("preferredLanguage", request.LanguageCode);
-        return Task.FromResult(Unit.Value);
-    }
-}
-********************************************************
-
-@{
-    var currentLang = (string)(Model?.User?.Model?["preferredLanguage"] ?? "en-US");
-    var returnUrl = Url.Action("Index", "Register", new { typeId = Model?.User?.RegistrationTypeId });
-}
-
-<form asp-controller="Register"
-      asp-action="SetLanguage"
-      method="post"
-      id="langForm"
-      class="mb-2">
-    @Html.AntiForgeryToken()
-    <input type="hidden" name="returnUrl" value="@returnUrl" />
-
-    <select name="languageCode"
-            class="form-control form-control-sm"
-            onchange="document.getElementById('langForm').submit()">
-        @foreach (var lang in Model.LookupData.Languages)
-        {
-            var selected = string.Equals(lang.Value, currentLang, StringComparison.OrdinalIgnoreCase) ? "selected" : null;
-            <option value="@lang.Value" selected="@selected">@lang.Text</option>
-        }
-    </select>
-</form>
-
-
-*******************************************
-
-public class QueryHandler : IRequestHandler<Query, Response>
-{
-    private readonly ApplicationDbContext _db;
-    private readonly ICurrentUserAccessor _currentUserAccessor;
-    private readonly IDelegateUserCacheService _delegateUserCacheService;
-    private readonly ILiquidTemplateManager _liquidTemplateManager;
-    private readonly IRegistrationService _registrationService;
-    private readonly IFormService _formService;
-    private readonly IHttpContextAccessor _http; // <-- add
-
-    public QueryHandler(
-        ApplicationDbContext db,
-        ICurrentUserAccessor currentUserAccessor,
-        IDelegateUserCacheService delegateUserCacheService,
-        ILiquidTemplateManager liquidTemplateManager,
-        IRegistrationService registrationService,
-        IFormService formService,
-        IHttpContextAccessor httpContextAccessor) // <-- add
-    {
-        _db = db;
-        _currentUserAccessor = currentUserAccessor;
-        _delegateUserCacheService = delegateUserCacheService;
-        _liquidTemplateManager = liquidTemplateManager;
-        _registrationService = registrationService;
-        _formService = formService;
-        _http = httpContextAccessor; // <-- add
-    }
-
-    public async Task<Response> Handle(Query request, CancellationToken cancellationToken)
-    {
-        var response = new Response();
-
-        if (_currentUserAccessor.Get.Identity.IsAuthenticated)
-        {
-            var userId = _currentUserAccessor.GetUserId().Value;
-            var delegateUser = await _db.Delegates
-                .Include(e => e.ApplicationUser)
-                .Include(e => e.RegistrationType)
-                    .ThenInclude(e => e.RegistrationPath)
-                .FirstOrDefaultAsync(e => e.Id == userId);
-
-            var regStatus = (ApplicationCore.Data.Enums.RegistrationStatus)delegateUser.RegistrationStatusId;
-            if (regStatus == ApplicationCore.Data.Enums.RegistrationStatus.Invited)
-            {
-                if (!delegateUser.IsTest && !_registrationService.CanRegister(delegateUser.RegistrationType))
-                {
-                    response.Status = ResponseStatus.RegistrationClosed;
-                    return response;
-                }
-
-                var formModel = await _formService.GetRegistrationForm();
-                var formResponse = await _formService.GetUserResponseModel(formModel.Form.Id, userId);
-
-                // 👇 read preferred language (Session fallback to "en-US")
-                var lang = _http.HttpContext?.Session?.GetString("preferredLanguage") ?? "en-US";
-
-                // 🔴 IMPORTANT: use an overload that applies localization on the server
-                // e.g., _formService.GetFormDisplayModel(formModel, formResponse.Value, lang)
-                var model = await _formService.GetFormDisplayModel(formModel, formResponse.Value, lang);
-
-                response.Status = ResponseStatus.DisplayRegistration;
-                response.RegisterModel = model;
-                return response;
-            }
-
-            // ... rest unchanged ...
-        }
-
-        // ... existing unauthenticated branch unchanged ...
-        return null;
-    }
-}
-
-
-*****************************************************************
+/* ======= CONFIG ======= */
+DECLARE @ExcelPath NVARCHAR(4000) = N'C:\Imports\translations.xlsx';
+DECLARE @Sheet     NVARCHAR(128)  = N'Sheet1$'; -- change if needed
+
+/* ======= Prep: enable OPENROWSET if needed ======= */
+IF NOT EXISTS (SELECT 1 FROM sys.configurations WHERE name = 'Ad Hoc Distributed Queries' AND value_in_use = 1)
+BEGIN
+  EXEC sp_configure 'show advanced options', 1; RECONFIGURE;
+  EXEC sp_configure 'Ad Hoc Distributed Queries', 1; RECONFIGURE;
+END
+
+/* ======= Stage Excel ======= */
+IF OBJECT_ID('tempdb..#xl_raw') IS NOT NULL DROP TABLE #xl_raw;
+CREATE TABLE #xl_raw
+(
+  ProjectId INT           NOT NULL,
+  FieldId   INT           NOT NULL,
+  EsText    NVARCHAR(4000) NULL,
+  FrText    NVARCHAR(4000) NULL
+);
+
+INSERT INTO #xl_raw(ProjectId, FieldId, EsText, FrText)
+SELECT
+  CAST([ProjectId] AS INT) AS ProjectId,
+  CAST([FieldId]   AS INT) AS FieldId,
+  NULLIF(LTRIM(RTRIM([es])), N'') AS EsText,
+  NULLIF(LTRIM(RTRIM([fr])), N'') AS FrText
+FROM OPENROWSET
+(
+  'Microsoft.ACE.OLEDB.12.0',
+  'Excel 12.0;HDR=YES;IMEX=1;Database=' + @ExcelPath,
+  'SELECT [ProjectId],[FieldId],[es],[fr] FROM [' + @Sheet + ']'
+) AS X;
+
+-- De-dup per ProjectId+FieldId (take the longest non-null value if duplicates)
+IF OBJECT_ID('tempdb..#xl') IS NOT NULL DROP TABLE #xl;
+SELECT
+  ProjectId,
+  FieldId,
+  EsText = (SELECT TOP(1) v FROM (SELECT EsText v UNION ALL SELECT EsText) d WHERE v IS NOT NULL ORDER BY LEN(v) DESC),
+  FrText = (SELECT TOP(1) v FROM (SELECT FrText v UNION ALL SELECT FrText) d WHERE v IS NOT NULL ORDER BY LEN(v) DESC)
+INTO #xl
+FROM #xl_raw
+GROUP BY ProjectId, FieldId;
+
+/* ======= Resolve language ids ======= */
+DECLARE @EsLangId INT =
+  (SELECT TOP(1) Id FROM LANGUAGE WHERE LanguageCode IN (N'es', N'es-ES') ORDER BY CASE WHEN LanguageCode=N'es' THEN 0 ELSE 1 END);
+DECLARE @FrLangId INT =
+  (SELECT TOP(1) Id FROM LANGUAGE WHERE LanguageCode IN (N'fr', N'fr-FR') ORDER BY CASE WHEN LanguageCode=N'fr' THEN 0 ELSE 1 END);
+
+IF @EsLangId IS NULL OR @FrLangId IS NULL
+BEGIN
+  RAISERROR('Spanish (es/es-ES) or French (fr/fr-FR) missing in LANGUAGE.', 16, 1);
+  RETURN;
+END
+
+/* ======= Ensure MRFLANGUAGE rows exist for ALL ProjectIds in the sheet ======= */
+-- Spanish
+INSERT INTO MRFLANGUAGE(ProjectId, LanguageId)
+SELECT DISTINCT x.ProjectId, @EsLangId
+FROM #xl x
+WHERE NOT EXISTS (
+  SELECT 1 FROM MRFLANGUAGE ml
+  WHERE ml.ProjectId = x.ProjectId AND ml.LanguageId = @EsLangId
+);
+
+-- French
+INSERT INTO MRFLANGUAGE(ProjectId, LanguageId)
+SELECT DISTINCT x.ProjectId, @FrLangId
+FROM #xl x
+WHERE NOT EXISTS (
+  SELECT 1 FROM MRFLANGUAGE ml
+  WHERE ml.ProjectId = x.ProjectId AND ml.LanguageId = @FrLangId
+);
+
+/* ======= UPSERT Spanish ======= */
+MERGE dbo.MRFLanguageResource AS T
+USING (
+  SELECT
+    ml.Id AS MRFLanguageId,
+    x.FieldId,
+    x.EsText AS LanguageResource
+  FROM #xl x
+  JOIN MRFLANGUAGE ml
+    ON ml.ProjectId  = x.ProjectId
+   AND ml.LanguageId = @EsLangId
+  WHERE x.EsText IS NOT NULL
+) AS S
+ON  T.MRFLanguageId = S.MRFLanguageId
+AND T.FieldId       = S.FieldId
+WHEN MATCHED AND NULLIF(LTRIM(RTRIM(T.LanguageResource)),N'') <> S.LanguageResource
+  THEN UPDATE SET T.LanguageResource = S.LanguageResource
+WHEN NOT MATCHED BY TARGET
+  THEN INSERT (MRFLanguageId, FieldId, LanguageResource)
+       VALUES (S.MRFLanguageId, S.FieldId, S.LanguageResource);
+
+/* ======= UPSERT French ======= */
+MERGE dbo.MRFLanguageResource AS T
+USING (
+  SELECT
+    ml.Id AS MRFLanguageId,
+    x.FieldId,
+    x.FrText AS LanguageResource
+  FROM #xl x
+  JOIN MRFLANGUAGE ml
+    ON ml.ProjectId  = x.ProjectId
+   AND ml.LanguageId = @FrLangId
+  WHERE x.FrText IS NOT NULL
+) AS S
+ON  T.MRFLanguageId = S.MRFLanguageId
+AND T.FieldId       = S.FieldId
+WHEN MATCHED AND NULLIF(LTRIM(RTRIM(T.LanguageResource)),N'') <> S.LanguageResource
+  THEN UPDATE SET T.LanguageResource = S.LanguageResource
+WHEN NOT MATCHED BY TARGET
+  THEN INSERT (MRFLanguageId, FieldId, LanguageResource)
+       VALUES (S.MRFLanguageId, S.FieldId, S.LanguageResource);
+
+############################################################################################
+
+/* ======= CONFIG ======= */
+DECLARE @ProjectId INT = 123;  -- <-- set your project
+DECLARE @ExcelPath NVARCHAR(4000) = N'C:\Imports\translations.xlsx'; -- full path
+DECLARE @Sheet NVARCHAR(128) = N'Sheet1$';  -- worksheet name with trailing $
+
+/* ======= Setup (OPENROWSET) ======= */
+/* Require: ACE OLE DB and Ad Hoc Distributed Queries enabled */
+IF NOT EXISTS (SELECT 1 FROM sys.configurations WHERE name = 'Ad Hoc Distributed Queries' AND value_in_use = 1)
+BEGIN
+  EXEC sp_configure 'show advanced options', 1; RECONFIGURE;
+  EXEC sp_configure 'Ad Hoc Distributed Queries', 1; RECONFIGURE;
+END
+
+/* Temp staging */
+IF OBJECT_ID('tempdb..#xl') IS NOT NULL DROP TABLE #xl;
+CREATE TABLE #xl
+(
+  FieldId INT NOT NULL,
+  EsText NVARCHAR(4000) NULL,
+  FrText NVARCHAR(4000) NULL
+);
+
+/* Read Excel into #xl */
+INSERT INTO #xl(FieldId, EsText, FrText)
+SELECT
+  CAST([FieldId] AS INT) AS FieldId,
+  NULLIF(LTRIM(RTRIM([es])), N'') AS EsText,
+  NULLIF(LTRIM(RTRIM([fr])), N'') AS FrText
+FROM OPENROWSET
+(
+  'Microsoft.ACE.OLEDB.12.0',
+  'Excel 12.0;HDR=YES;IMEX=1;Database=' + @ExcelPath,
+  'SELECT [FieldId], [es], [fr] FROM [' + @Sheet + ']'
+) AS X;
+
+/* Validate staging */
+IF EXISTS (SELECT 1 FROM #xl WHERE FieldId IS NULL)
+BEGIN
+  RAISERROR('Staging contains NULL FieldId values. Fix the Excel file and retry.', 16, 1);
+  RETURN;
+END
+
+/* ======= Resolve LanguageIds and MRFLanguageIds ======= */
+DECLARE @EsLangId INT =
+(
+  SELECT TOP(1) Id
+  FROM LANGUAGE
+  WHERE LanguageCode IN (N'es', N'es-ES')
+  ORDER BY CASE WHEN LanguageCode = N'es' THEN 0 ELSE 1 END
+);
+DECLARE @FrLangId INT =
+(
+  SELECT TOP(1) Id
+  FROM LANGUAGE
+  WHERE LanguageCode IN (N'fr', N'fr-FR')
+  ORDER BY CASE WHEN LanguageCode = N'fr' THEN 0 ELSE 1 END
+);
+
+IF @EsLangId IS NULL OR @FrLangId IS NULL
+BEGIN
+  RAISERROR('Spanish or French not found in LANGUAGE table. Insert them first.', 16, 1);
+  RETURN;
+END
+
+/* Ensure MRFLANGUAGE rows exist for this project */
+IF NOT EXISTS (SELECT 1 FROM MRFLANGUAGE WHERE ProjectId=@ProjectId AND LanguageId=@EsLangId)
+  INSERT INTO MRFLANGUAGE(ProjectId, LanguageId) VALUES (@ProjectId, @EsLangId);
+IF NOT EXISTS (SELECT 1 FROM MRFLANGUAGE WHERE ProjectId=@ProjectId AND LanguageId=@FrLangId)
+  INSERT INTO MRFLANGUAGE(ProjectId, LanguageId) VALUES (@ProjectId, @FrLangId);
+
+DECLARE @EsMRF INT = (SELECT Id FROM MRFLANGUAGE WHERE ProjectId=@ProjectId AND LanguageId=@EsLangId);
+DECLARE @FrMRF INT = (SELECT Id FROM MRFLANGUAGE WHERE ProjectId=@ProjectId AND LanguageId=@FrLangId);
+
+/* ======= Upsert Spanish ======= */
+MERGE dbo.MRFLanguageResource AS T
+USING (
+  SELECT FieldId, EsText
+  FROM #xl
+  WHERE EsText IS NOT NULL
+) AS S
+ON T.MRFLanguageId = @EsMRF AND T.FieldId = S.FieldId
+WHEN MATCHED AND NULLIF(LTRIM(RTRIM(T.LanguageResource)), N'') <> S.EsText
+  THEN UPDATE SET T.LanguageResource = S.EsText
+WHEN NOT MATCHED BY TARGET
+  THEN INSERT (MRFLanguageId, FieldId, LanguageResource)
+       VALUES (@EsMRF, S.FieldId, S.EsText);
+
+/* ======= Upsert French ======= */
+MERGE dbo.MRFLanguageResource AS T
+USING (
+  SELECT FieldId, FrText
+  FROM #xl
+  WHERE FrText IS NOT NULL
+) AS S
+ON T.MRFLanguageId = @FrMRF AND T.FieldId = S.FieldId
+WHEN MATCHED AND NULLIF(LTRIM(RTRIM(T.LanguageResource)), N'') <> S.FrText
+  THEN UPDATE SET T.LanguageResource = S.FrText
+WHEN NOT MATCHED BY TARGET
+  THEN INSERT (MRFLanguageId, FieldId, LanguageResource)
+       VALUES (@FrMRF, S.FieldId, S.FrText);
+
 
