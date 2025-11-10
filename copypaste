@@ -1,4 +1,47 @@
-/* ======= CONFIG ======= */
+------------------------------------------------------------
+-- 1) Ensure language master rows exist
+------------------------------------------------------------
+IF NOT EXISTS (SELECT 1 FROM LANGUAGE WHERE LanguageCode = @EsCode)
+    INSERT INTO LANGUAGE (LanguageCode, LanguageName)
+    VALUES (@EsCode, N'Spanish');
+
+IF NOT EXISTS (SELECT 1 FROM LANGUAGE WHERE LanguageCode = @FrCode)
+    INSERT INTO LANGUAGE (LanguageCode, LanguageName)
+    VALUES (@FrCode, N'French');
+
+------------------------------------------------------------
+-- 2) Enable languages for the project (MRFLANGUAGE uses LanguageId)
+------------------------------------------------------------
+IF OBJECT_ID('dbo.MRFLANGUAGE', 'U') IS NOT NULL
+BEGIN
+    -- Enable Spanish
+    INSERT INTO MRFLANGUAGE (ProjectId, LanguageId)
+    SELECT @ProjectId, L.Id
+    FROM LANGUAGE L
+    WHERE L.LanguageCode = @EsCode
+      AND NOT EXISTS (
+            SELECT 1
+            FROM MRFLANGUAGE ML
+            WHERE ML.ProjectId = @ProjectId
+              AND ML.LanguageId = L.Id
+      );
+
+    -- Enable French
+    INSERT INTO MRFLANGUAGE (ProjectId, LanguageId)
+    SELECT @ProjectId, L.Id
+    FROM LANGUAGE L
+    WHERE L.LanguageCode = @FrCode
+      AND NOT EXISTS (
+            SELECT 1
+            FROM MRFLANGUAGE ML
+            WHERE ML.ProjectId = @ProjectId
+              AND ML.LanguageId = L.Id
+      );
+END
+
+
+
+*******************************************************************************/* ======= CONFIG ======= */
 DECLARE @ExcelPath NVARCHAR(4000) = N'C:\Imports\translations.xlsx';
 DECLARE @Sheet     NVARCHAR(128)  = N'Sheet1$'; -- change if needed
 
