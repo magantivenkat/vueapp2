@@ -1,98 +1,116 @@
-DECLARE @LanguageCode NVARCHAR(10) = 'fr';      -- Change to 'es' or 'fr'
+DECLARE @LanguageCode NVARCHAR(10) = 'fr';      -- Change to 'fr', 'es', or 'en'
 DECLARE @LanguageId INT;
 DECLARE @ProjectId INT;
 DECLARE @ResourceColumn NVARCHAR(50);
 DECLARE @sql NVARCHAR(MAX);
 
 ------------------------------------------------------------
--- 1. Lookup Language and Project
+-- 1. Lookup LanguageId
 ------------------------------------------------------------
-SELECT @LanguageId = Id FROM Language WHERE LanguageCode = @LanguageCode;
+SELECT @LanguageId = Id 
+FROM Language 
+WHERE LanguageCode = @LanguageCode;
 
 IF @LanguageId IS NULL
 BEGIN
-    RAISERROR('Language code %s not found in Language table.', 16, 1, @LanguageCode);
-    RETURN;
-END
-
-SELECT TOP 1 @ProjectId = ProjectId FROM MRFLANGUAGE WHERE LanguageId = @LanguageId;
-
-IF @ProjectId IS NULL
-BEGIN
-    RAISERROR('No ProjectId found in MRFLANGUAGE for LanguageId %d', 16, 1, @LanguageId);
+    RAISERROR('Unknown LanguageCode: %s', 16, 1, @LanguageCode);
     RETURN;
 END
 
 ------------------------------------------------------------
--- 2. Read Excel into #ExcelResources
+-- 2. Lookup ProjectId for this language
+------------------------------------------------------------
+SELECT TOP 1 @ProjectId = ProjectId 
+FROM MRFLANGUAGE 
+WHERE LanguageId = @LanguageId;
+
+IF @ProjectId IS NULL
+BEGIN
+    RAISERROR('No MRFLANGUAGE entry for LanguageId %d', 16, 1, @LanguageId);
+    RETURN;
+END
+
+------------------------------------------------------------
+-- 3. Load Excel → #ExcelResources
 ------------------------------------------------------------
 IF OBJECT_ID('tempdb..#ExcelResources') IS NOT NULL DROP TABLE #ExcelResources;
 
 SELECT *
 INTO #ExcelResources
 FROM OPENROWSET(
-    'Microsoft.ACE.OLEDB.12.0',
-    'Excel 12.0;Database=C:\repos\Book1.xlsx;HDR=YES',
-    'SELECT * FROM [Sheet1$]'
-);
-
--- Expected Excel columns:
--- FieldId | DataTag | French | Spanish | FieldName
+        'Microsoft.ACE.OLEDB.12.0',
+        'Excel 12.0;HDR=YES;Database=C:\repos\Book1.xlsx',
+        'SELECT * FROM [Sheet1$]'
+    );
 
 ------------------------------------------------------------
--- 3. Determine which Excel column to use
+-- 4. Determine which column to use for translation text
 ------------------------------------------------------------
 IF (@LanguageCode = 'fr') SET @ResourceColumn = 'French';
 ELSE IF (@LanguageCode = 'es') SET @ResourceColumn = 'Spanish';
 ELSE IF (@LanguageCode = 'en') SET @ResourceColumn = 'FieldName';
-ELSE
+ELSE 
 BEGIN
-    RAISERROR('Unsupported LanguageCode: %s', 16, 1, @LanguageCode);
+    RAISERROR('Unsupported LanguageCode.', 16, 1);
     RETURN;
 END
 
 ------------------------------------------------------------
--- 4. Prepare cleaned temp data
+-- 5. Prepare #ToInsert (created before dynamic SQL = stays alive)
 ------------------------------------------------------------
 IF OBJECT_ID('tempdb..#ToInsert') IS NOT NULL DROP TABLE #ToInsert;
 
-SET @sql = '
+CREATE TABLE #ToInsert (
+    RowNum INT,
+    FieldId INT,
+    ResourceText NVARCHAR(4000),
+    DataTag NVARCHAR(200)
+);
+
+------------------------------------------------------------
+-- 6. Insert into #ToInsert using dynamic SQL
+------------------------------------------------------------
+SET @sql = N'
+INSERT INTO #ToInsert (RowNum, FieldId, ResourceText, DataTag)
 SELECT
-    ROW_NUMBER() OVER (ORDER BY FieldId) AS RowNum,
+    ROW_NUMBER() OVER (ORDER BY FieldId),
     FieldId,
-    ' + QUOTENAME(@ResourceColumn) + ' AS ResourceText,
+    ' + QUOTENAME(@ResourceColumn) + N',
     DataTag
-INTO #ToInsert
 FROM #ExcelResources
-WHERE ' + QUOTENAME(@ResourceColumn) + ' IS NOT NULL
-  AND LTRIM(RTRIM(' + QUOTENAME(@ResourceColumn) + ')) <> ''''';
+WHERE ' + QUOTENAME(@ResourceColumn) + N' IS NOT NULL
+  AND LTRIM(RTRIM(' + QUOTENAME(@ResourceColumn) + N')) <> ''''
+';
 
 EXEC(@sql);
 
 ------------------------------------------------------------
--- 5. Insert into LanguageResource and capture mapping
+-- 7. Prepare temp table to map RowNum → Inserted LanguageResourceId
 ------------------------------------------------------------
 IF OBJECT_ID('tempdb..#InsertedResources') IS NOT NULL DROP TABLE #InsertedResources;
+
 CREATE TABLE #InsertedResources (
     RowNum INT,
     LanguageResourceId INT
 );
 
+------------------------------------------------------------
+-- 8. Insert into LanguageResource and capture IDs
+------------------------------------------------------------
 INSERT INTO LanguageResource (LanguageResourceText, LanguageId, StandardField, ProjectId, DataTag)
-OUTPUT 
-    SRC.RowNum, 
-    INSERTED.Id
-INTO #InsertedResources (RowNum, LanguageResourceId)
+OUTPUT SRC.RowNum, INSERTED.Id 
+       INTO #InsertedResources (RowNum, LanguageResourceId)
 SELECT
     T.ResourceText,
     @LanguageId,
     1 AS StandardField,
     @ProjectId,
     T.DataTag
-FROM #ToInsert AS T;
+FROM #ToInsert AS SRC
+JOIN #ToInsert AS T ON SRC.RowNum = T.RowNum;
 
 ------------------------------------------------------------
--- 6. Link to MRFLanguageResource (Field → Resource)
+-- 9. Link to MRFLanguageResource
 ------------------------------------------------------------
 INSERT INTO MRFLanguageResource (ProjectId, FieldId, LanguageResourceId)
 SELECT
@@ -100,16 +118,21 @@ SELECT
     T.FieldId,
     IR.LanguageResourceId
 FROM #ToInsert AS T
-JOIN #InsertedResources AS IR ON T.RowNum = IR.RowNum;
+JOIN #InsertedResources AS IR
+      ON T.RowNum = IR.RowNum;
 
 ------------------------------------------------------------
--- 7. Cleanup
+-- 10. Cleanup
 ------------------------------------------------------------
 DROP TABLE #InsertedResources;
 DROP TABLE #ToInsert;
 DROP TABLE #ExcelResources;
 
-PRINT 'Import complete for language: ' + @LanguageCode;
+PRINT 'Import completed for LanguageCode = ' + @LanguageCode;
+
+
+
+************************************************************************************************************************************************
 
 
 
