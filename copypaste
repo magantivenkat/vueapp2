@@ -1,16 +1,33 @@
-DECLARE @LanguageCode NVARCHAR(10) = 'fr';      -- Change as needed
+DECLARE @LanguageCode NVARCHAR(10) = 'fr';      -- Change to 'es' or 'fr'
 DECLARE @LanguageId INT;
 DECLARE @ProjectId INT;
 DECLARE @ResourceColumn NVARCHAR(50);
 DECLARE @sql NVARCHAR(MAX);
 
--- Lookup LanguageId
+------------------------------------------------------------
+-- 1. Lookup Language and Project
+------------------------------------------------------------
 SELECT @LanguageId = Id FROM Language WHERE LanguageCode = @LanguageCode;
--- Lookup ProjectId
+
+IF @LanguageId IS NULL
+BEGIN
+    RAISERROR('Language code %s not found in Language table.', 16, 1, @LanguageCode);
+    RETURN;
+END
+
 SELECT TOP 1 @ProjectId = ProjectId FROM MRFLANGUAGE WHERE LanguageId = @LanguageId;
 
--- Read Excel
+IF @ProjectId IS NULL
+BEGIN
+    RAISERROR('No ProjectId found in MRFLANGUAGE for LanguageId %d', 16, 1, @LanguageId);
+    RETURN;
+END
+
+------------------------------------------------------------
+-- 2. Read Excel into #ExcelResources
+------------------------------------------------------------
 IF OBJECT_ID('tempdb..#ExcelResources') IS NOT NULL DROP TABLE #ExcelResources;
+
 SELECT *
 INTO #ExcelResources
 FROM OPENROWSET(
@@ -19,57 +36,81 @@ FROM OPENROWSET(
     'SELECT * FROM [Sheet1$]'
 );
 
--- Map resource column
+-- Expected Excel columns:
+-- FieldId | DataTag | French | Spanish | FieldName
+
+------------------------------------------------------------
+-- 3. Determine which Excel column to use
+------------------------------------------------------------
 IF (@LanguageCode = 'fr') SET @ResourceColumn = 'French';
 ELSE IF (@LanguageCode = 'es') SET @ResourceColumn = 'Spanish';
 ELSE IF (@LanguageCode = 'en') SET @ResourceColumn = 'FieldName';
+ELSE
+BEGIN
+    RAISERROR('Unsupported LanguageCode: %s', 16, 1, @LanguageCode);
+    RETURN;
+END
 
--- Create temp table for insert, including an identity column
-IF OBJECT_ID('tempdb..##ToInsert') IS NOT NULL DROP TABLE ##ToInsert;
+------------------------------------------------------------
+-- 4. Prepare cleaned temp data
+------------------------------------------------------------
+IF OBJECT_ID('tempdb..#ToInsert') IS NOT NULL DROP TABLE #ToInsert;
+
 SET @sql = '
 SELECT
     ROW_NUMBER() OVER (ORDER BY FieldId) AS RowNum,
     FieldId,
     ' + QUOTENAME(@ResourceColumn) + ' AS ResourceText,
     DataTag
-INTO ##ToInsert
+INTO #ToInsert
 FROM #ExcelResources
 WHERE ' + QUOTENAME(@ResourceColumn) + ' IS NOT NULL
-  AND ' + QUOTENAME(@ResourceColumn) + ' <> ''''
-';
+  AND LTRIM(RTRIM(' + QUOTENAME(@ResourceColumn) + ')) <> ''''';
+
 EXEC(@sql);
 
--- Prepare temp table for inserted IDs and row numbers
-IF OBJECT_ID('tempdb..##InsertedResources') IS NOT NULL DROP TABLE ##InsertedResources;
-CREATE TABLE ##InsertedResources (
+------------------------------------------------------------
+-- 5. Insert into LanguageResource and capture mapping
+------------------------------------------------------------
+IF OBJECT_ID('tempdb..#InsertedResources') IS NOT NULL DROP TABLE #InsertedResources;
+CREATE TABLE #InsertedResources (
     RowNum INT,
     LanguageResourceId INT
 );
 
--- Insert into LanguageResource and output the row number with new ID
 INSERT INTO LanguageResource (LanguageResourceText, LanguageId, StandardField, ProjectId, DataTag)
-OUTPUT inserted_resource.RowNum, INSERTED.Id INTO ##InsertedResources(RowNum, LanguageResourceId)
+OUTPUT 
+    SRC.RowNum, 
+    INSERTED.Id
+INTO #InsertedResources (RowNum, LanguageResourceId)
 SELECT
-    ResourceText,
+    T.ResourceText,
     @LanguageId,
-    1,
+    1 AS StandardField,
     @ProjectId,
-    DataTag
-FROM ##ToInsert inserted_resource;
+    T.DataTag
+FROM #ToInsert AS T;
 
--- Link fields to language resource by row number to FieldId
-INSERT INTO MRFLANGUAGERESOURCE (ProjectId, FieldId, LanguageResourceId)
+------------------------------------------------------------
+-- 6. Link to MRFLanguageResource (Field → Resource)
+------------------------------------------------------------
+INSERT INTO MRFLanguageResource (ProjectId, FieldId, LanguageResourceId)
 SELECT
     @ProjectId,
-    tin.FieldId,
-    ir.LanguageResourceId
-FROM ##ToInsert tin
-INNER JOIN ##InsertedResources ir ON tin.RowNum = ir.RowNum;
+    T.FieldId,
+    IR.LanguageResourceId
+FROM #ToInsert AS T
+JOIN #InsertedResources AS IR ON T.RowNum = IR.RowNum;
 
--- Clean up
-DROP TABLE ##InsertedResources;
-DROP TABLE ##ToInsert;
+------------------------------------------------------------
+-- 7. Cleanup
+------------------------------------------------------------
+DROP TABLE #InsertedResources;
+DROP TABLE #ToInsert;
 DROP TABLE #ExcelResources;
+
+PRINT 'Import complete for language: ' + @LanguageCode;
+
 
 
 
