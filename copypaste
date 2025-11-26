@@ -1,6 +1,30 @@
 public async Task<Dictionary<string, string>> GetLabelMapForLanguageAsync(int projectId, string languageCode)
 {
     var rows = await (
+        from l in _db.Language
+        join mrl in _db.MRFLanguage on l.Id equals mrl.LanguageId
+        join lr in _db.LanguageResource on new { mrl.ProjectId, mrl.LanguageId } 
+                                           equals new { lr.ProjectId, lr.LanguageId }
+        join mrflr in _db.MRFLanguageResource on lr.Id equals mrflr.LanguageResourceId
+        join f in _db.Fields on mrflr.FieldId equals f.Id
+        where mrl.ProjectId == projectId
+           && l.LanguageCode.ToLower() == languageCode.ToLower()
+        select new
+        {
+            FieldKey = f.Id.ToString(),
+            Label = lr.LanguageResourceText
+        }
+    ).ToListAsync();
+
+    return rows
+        .GroupBy(x => x.FieldKey)
+        .ToDictionary(g => g.Key, g => g.First().Label);
+}
+
+
+public async Task<Dictionary<string, string>> GetLabelMapForLanguageAsync(int projectId, string languageCode)
+{
+    var rows = await (
         from lr in _db.LanguageResource
 		join l in _db.Language on lr.LanguageId equals l.Id
         join mrflr in _db.MRFLanguageResource on lr.Id equals mrflr.LanguageResourceId
