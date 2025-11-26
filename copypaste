@@ -1,3 +1,69 @@
+public async Task<Dictionary<string, string>> GetLabelMapForLanguageAsync(int projectId, string languageCode)
+{
+    var rows = await (
+        from lr in _db.LanguageResource
+		join l in _db.Language on lr.LanguageId equals l.Id
+        join mrflr in _db.MRFLanguageResource on lr.Id equals mrflr.LanguageResourceId
+		join f in _db.Fields on mrflr.FieldId equals f.Id
+		where l.LanguageCode.ToLower() == languageCode.ToLower() && lr.ProjectId == projectId
+		select new
+        {
+            FieldKey = f.Id.ToString(), 
+            Label = lr.LanguageResourceText                    
+        }
+    ).ToListAsync();
+
+    var map = rows
+        .GroupBy(x => x.FieldKey)
+        .ToDictionary(g => g.Key, g => g.First().Label);
+
+    return map;
+}
+
+SELECT * FROM LANGUAGE
+SELECT * FROM MRFLANGUAGE
+SELECT * FROM LANGUAGERESOURCE
+SELECT * FROM MRFLANGUAGERESOURCE
+
+7	English	en	1	1
+8	Spanish	es	1	2
+9	French	fr	1	3
+
+1	112	8
+2	112	9
+3	112	7
+
+1	*Event Start Date 	9	1	112	EventStartDate
+2	*Event End Date 	9	1	112	EventEndDate
+3	*Contact email address	9	1	112	Email
+4	*Destination 	9	1	112	DestinationExternalId
+5	*Requestor Country	9	1	112	RequestorCountry
+6	*Servicing Country	9	1	112	ServicingCountry
+7	*Contact First Name	9	1	112	FirstName
+8	*Contact Last Name	9	1	112	LastName
+9	*Are your dates or destination flexible? 	9	1	112	Areyourdatesordestinationflexible?
+10	Additional Information	9	1	112	AdditionalInformation
+11	*Contact phone number	9	1	112	Contactphonenumber
+12	Event Name 	9	1	112	EventName
+13	*Number of Attendees 	9	1	112	NumberofAttendees
+
+1	112	3167	1
+2	112	3168	2
+3	112	3169	3
+4	112	3172	4
+5	112	3173	5
+6	112	3174	6
+7	112	3175	7
+8	112	3184	8
+9	112	3187	9
+10	112	3192	10
+11	112	3194	11
+12	112	3195	12
+13	112	3196	13
+
+=============================================================================================================================================
+
+
 CREATE OR ALTER PROCEDURE dbo.ImportLanguageResources
 (
       @LanguageCode NVARCHAR(10)     -- 'fr', 'es', or 'en'
