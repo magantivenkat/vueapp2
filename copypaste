@@ -1,3 +1,80 @@
+DECLARE @LanguageCode NVARCHAR(10) = 'fr';      -- Change as needed
+DECLARE @LanguageId INT;
+DECLARE @ProjectId INT;
+DECLARE @ResourceColumn NVARCHAR(50);
+DECLARE @sql NVARCHAR(MAX);
+
+-- Lookup LanguageId
+SELECT @LanguageId = Id FROM Language WHERE LanguageCode = @LanguageCode;
+-- Lookup ProjectId
+SELECT TOP 1 @ProjectId = ProjectId FROM MRFLANGUAGE WHERE LanguageId = @LanguageId;
+
+-- Read Excel
+IF OBJECT_ID('tempdb..#ExcelResources') IS NOT NULL DROP TABLE #ExcelResources;
+SELECT *
+INTO #ExcelResources
+FROM OPENROWSET(
+    'Microsoft.ACE.OLEDB.12.0',
+    'Excel 12.0;Database=C:\repos\Book1.xlsx;HDR=YES',
+    'SELECT * FROM [Sheet1$]'
+);
+
+-- Map resource column
+IF (@LanguageCode = 'fr') SET @ResourceColumn = 'French';
+ELSE IF (@LanguageCode = 'es') SET @ResourceColumn = 'Spanish';
+ELSE IF (@LanguageCode = 'en') SET @ResourceColumn = 'FieldName';
+
+-- Create temp table for insert, including an identity column
+IF OBJECT_ID('tempdb..##ToInsert') IS NOT NULL DROP TABLE ##ToInsert;
+SET @sql = '
+SELECT
+    ROW_NUMBER() OVER (ORDER BY FieldId) AS RowNum,
+    FieldId,
+    ' + QUOTENAME(@ResourceColumn) + ' AS ResourceText,
+    DataTag
+INTO ##ToInsert
+FROM #ExcelResources
+WHERE ' + QUOTENAME(@ResourceColumn) + ' IS NOT NULL
+  AND ' + QUOTENAME(@ResourceColumn) + ' <> ''''
+';
+EXEC(@sql);
+
+-- Prepare temp table for inserted IDs and row numbers
+IF OBJECT_ID('tempdb..##InsertedResources') IS NOT NULL DROP TABLE ##InsertedResources;
+CREATE TABLE ##InsertedResources (
+    RowNum INT,
+    LanguageResourceId INT
+);
+
+-- Insert into LanguageResource and output the row number with new ID
+INSERT INTO LanguageResource (LanguageResourceText, LanguageId, StandardField, ProjectId, DataTag)
+OUTPUT inserted_resource.RowNum, INSERTED.Id INTO ##InsertedResources(RowNum, LanguageResourceId)
+SELECT
+    ResourceText,
+    @LanguageId,
+    1,
+    @ProjectId,
+    DataTag
+FROM ##ToInsert inserted_resource;
+
+-- Link fields to language resource by row number to FieldId
+INSERT INTO MRFLANGUAGERESOURCE (ProjectId, FieldId, LanguageResourceId)
+SELECT
+    @ProjectId,
+    tin.FieldId,
+    ir.LanguageResourceId
+FROM ##ToInsert tin
+INNER JOIN ##InsertedResources ir ON tin.RowNum = ir.RowNum;
+
+-- Clean up
+DROP TABLE ##InsertedResources;
+DROP TABLE ##ToInsert;
+DROP TABLE #ExcelResources;
+
+
+
+
+
 ------------------------------------------------------------
 -- 1) Ensure language master rows exist
 ------------------------------------------------------------
