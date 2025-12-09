@@ -1,3 +1,127 @@
+
+using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using YourApp.ViewModels;
+using GoRegister.ApplicationCore.Data;
+
+public class CustomFieldResourceService : ICustomFieldResourceService
+{
+    private readonly ApplicationDbContext _db;
+
+    public CustomFieldResourceService(ApplicationDbContext db)
+    {
+        _db = db;
+    }
+
+    // ------------------------------------------------------
+    // LOAD PAGE DATA (Languages, Fields, Existing Resources)
+    // ------------------------------------------------------
+    public async Task<CustomFieldResourceViewModel> LoadPageAsync(int projectId)
+    {
+        var vm = new CustomFieldResourceViewModel
+        {
+            ProjectId = projectId
+        };
+
+        // 1. Languages mapped to this project (MRFLanguage)
+        vm.Languages = await (
+            from ml in _db.MRFLanguage
+            join l in _db.Language on ml.LanguageId equals l.Id
+            where ml.ProjectId == projectId
+            orderby l.SortOrder
+            select new SelectListItem
+            {
+                Value = l.Id.ToString(),
+                Text = l.LanguageName
+            }
+        ).ToListAsync();
+
+
+        // 2. Custom Fields (where IsStandardField == null)
+        vm.CustomFields = await _db.Fields
+            .Where(f => f.ProjectId == projectId && f.IsStandardField == null)
+            .OrderBy(f => f.SortOrder)
+            .Select(f => new SelectListItem
+            {
+                Value = f.Id.ToString(),
+                Text = f.FieldName ?? f.DataTag
+            })
+            .ToListAsync();
+
+
+        // 3. Existing Translations
+        vm.ExistingResources = await (
+            from mr in _db.MRFLanguageResource
+            join lr in _db.LanguageResource on mr.LanguageResourceId equals lr.Id
+            join f in _db.Fields on mr.FieldId equals f.Id
+            join l in _db.Language on lr.LanguageId equals l.Id
+            where mr.ProjectId == projectId
+            select new CustomFieldResourceViewModel.CustomFieldResourceListItem
+            {
+                Id = mr.Id,
+                LanguageName = l.LanguageName,
+                FieldName = f.FieldName ?? f.DataTag,
+                ResourceText = lr.LanguageResourceText
+            }
+        ).ToListAsync();
+
+        return vm;
+    }
+
+    // ------------------------------------------------------
+    // SAVE A NEW RESOURCE
+    // ------------------------------------------------------
+    public async Task SaveAsync(CustomFieldResourceViewModel vm)
+    {
+        // Save into LanguageResource
+        var lr = new LanguageResource
+        {
+            LanguageId = vm.SelectedLanguageId,
+            LanguageResourceText = vm.LanguageResourceText,
+            ProjectId = vm.ProjectId,
+            StandardField = false
+        };
+
+        _db.LanguageResource.Add(lr);
+        await _db.SaveChangesAsync();
+
+        // Link to MRFLanguageResource
+        var mrlr = new MRFLanguageResource
+        {
+            ProjectId = vm.ProjectId,
+            FieldId = vm.SelectedFieldId,
+            LanguageResourceId = lr.Id
+        };
+
+        _db.MRFLanguageResource.Add(mrlr);
+        await _db.SaveChangesAsync();
+    }
+
+    // ------------------------------------------------------
+    // DELETE RESOURCE (remove both tables)
+    // ------------------------------------------------------
+    public async Task DeleteAsync(int id, int projectId)
+    {
+        var mr = await _db.MRFLanguageResource.FindAsync(id);
+
+        if (mr != null)
+        {
+            var lr = await _db.LanguageResource.FindAsync(mr.LanguageResourceId);
+            if (lr != null) _db.LanguageResource.Remove(lr);
+
+            _db.MRFLanguageResource.Remove(mr);
+            await _db.SaveChangesAsync();
+        }
+    }
+}
+
+
+
+
+
+
+
+
 public async Task<Dictionary<string, string>> GetLabelMapForLanguageAsync(int projectId, string languageCode)
 {
     var rows = await (
