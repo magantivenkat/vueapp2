@@ -1,3 +1,29 @@
+public class CustomFieldResourceViewModel
+{
+    public int ProjectId { get; set; }
+
+    public int SelectedLanguageId { get; set; }
+    public int SelectedFieldId { get; set; }
+    public string LanguageResourceText { get; set; }
+
+    public List<SelectListItem> Languages { get; set; } = new();
+    public List<SelectListItem> CustomFields { get; set; } = new();
+
+    // For listing existing mappings
+    public List<CustomFieldResourceListItem> ExistingResources { get; set; } = new();
+
+    public class CustomFieldResourceListItem
+    {
+        public int Id { get; set; }                  // MRFLanguageResource.Id
+        public string LanguageName { get; set; }
+        public string FieldName { get; set; }
+        public string ResourceText { get; set; }
+    }
+}
+
+
+
+
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc.Rendering;
