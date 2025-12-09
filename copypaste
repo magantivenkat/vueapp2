@@ -1,3 +1,43 @@
+using Microsoft.AspNetCore.Mvc;
+using YourApp.ViewModels;
+
+namespace GoRegister.Features.Admin
+{
+    [Route("admin/project/{projectId:int}/customfields")]
+    public class CustomFieldResourceController : Controller
+    {
+        private readonly ICustomFieldResourceService _service;
+
+        public CustomFieldResourceController(ICustomFieldResourceService service)
+        {
+            _service = service;
+        }
+
+        [HttpGet("")]
+        public async Task<IActionResult> Index(int projectId)
+        {
+            var vm = await _service.LoadPageAsync(projectId);
+            return View(vm);
+        }
+
+        [HttpPost("save")]
+        public async Task<IActionResult> Save(CustomFieldResourceViewModel vm)
+        {
+            await _service.SaveAsync(vm);
+            return RedirectToAction("Index", new { projectId = vm.ProjectId });
+        }
+
+        [HttpPost("delete/{id:int}")]
+        public async Task<IActionResult> Delete(int id, int projectId)
+        {
+            await _service.DeleteAsync(id, projectId);
+            return RedirectToAction("Index", new { projectId });
+        }
+    }
+}
+
+
+
 @model CustomFieldResourceViewModel
 
 <h2>Custom Field Resource</h2>
