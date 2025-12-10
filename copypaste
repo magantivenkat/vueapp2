@@ -1,3 +1,98 @@
+@using GoRegister.ApplicationCore.Domain.CustomFieldResource
+@model GoRegister.ApplicationCore.Domain.CustomFieldResource.CustomFieldResourceViewModel
+<h2>Custom Field Resource</h2>
+
+@* @using (Html.BeginForm())
+{ *@
+
+<form method="post">
+	<input type="hidden" asp-for="ProjectId" />
+	<input type="hidden" asp-for="MRFLanguageResourceId" />
+
+	<div class="row">
+		<div class="col-md-4">
+			<label>Language Selection</label>
+			<select asp-for="SelectedLanguageId" asp-items="Model.Languages" class="form-control" disabled="@(Model.IsEditMode ? "disabled" : null)">
+				<option value="">-- choose --</option>
+			</select>
+		</div>
+
+		<div class="col-md-4">
+			<label>Custom Field</label>
+			<select asp-for="SelectedFieldId" asp-items="Model.CustomFields" class="form-control" disabled="@(Model.IsEditMode ? "disabled" : null)">
+				<option value="">-- choose --</option>
+			</select>
+		</div>
+
+		<div class="col-md-4">
+			<label>Language Resource</label>
+			<input asp-for="LanguageResourceText" class="form-control" />
+		</div>
+	</div>
+
+	<button class="btn btn-success mt-3" id="save">
+		@(Model.IsEditMode ? "Update" : "Save")
+	</button>
+
+</form>
+
+<hr />
+
+<h3>Language Resource Details</h3>
+
+<table class="table table-hover table-bordered">
+	<thead class="table-dark">
+		<tr>
+			<th>Language</th>
+			<th>Custom Field</th>
+			<th>Resource</th>
+			<th>Edit</th>
+			<th>Delete</th>
+		</tr>
+	</thead>
+
+	<tbody>
+		@foreach (var item in Model.ExistingResources)
+		{
+			<tr>
+				<td>@item.LanguageName</td>
+				<td>@item.FieldName</td>
+				<td>@item.ResourceText</td>
+				<td>
+					<form asp-action="Edit" asp-route-id="@item.Id" asp-route-projectId="@Model.ProjectId" method="get">
+						<button class="btn btn-primary btn-sm">Edit</button>
+					</form>
+				</td>
+				<td>
+					<form asp-action="Delete" asp-route-id="@item.Id" asp-route-projectId="@Model.ProjectId" method="post">
+						<button class="btn btn-danger btn-sm">Delete</button>
+					</form>
+				</td>
+			</tr>
+		}
+	</tbody>
+</table>
+
+@section Scripts {
+	<script>
+
+		$(function () {
+			$("#save").click(function () {
+				var dt = $('#SelectedLanguageId').val();
+				var field = $('#SelectedFieldId').val();
+				if (dt == '') {
+					$('#smsg').text('Please select a language.');
+					return;
+				} else {
+					$('#smsg').text('');
+				}
+			});
+		});
+
+	</script>
+}
+
+
 <select asp-for="SelectedLanguageId"
         asp-items="Model.Languages"
         class="form-control"
