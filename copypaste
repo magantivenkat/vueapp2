@@ -1,3 +1,33 @@
+[HttpPost]
+public async Task<IActionResult> AddCustomFieldMapping([FromForm] CustomFieldResourceViewModel vm)
+{
+    if (vm.SelectedLanguageId != 0 && vm.SelectedFieldId != 0 && !string.IsNullOrWhiteSpace(vm.LanguageResourceText))
+    {
+        if (vm.MRFLanguageResourceId.HasValue)
+        {
+            await _customFieldMappingService.UpdateAsync(vm);
+            TempData["SuccessMessage"] = "Translation updated successfully!";
+        }
+        else
+        {
+            var exists = await _customFieldMappingService.ExistsAsync(vm.ProjectId, vm.SelectedLanguageId, vm.SelectedFieldId);
+            if (exists)
+            {
+                var page = await _customFieldMappingService.ReloadPageWithSelectionsAsync(vm);
+                page.ValidationMessage = "A resource already exists for this Language + Field.";
+                return View(page);
+            }
+
+            await _customFieldMappingService.SaveAsync(vm);
+            TempData["SuccessMessage"] = "Translation added successfully!";
+        }
+    }
+
+    return RedirectToAction(nameof(AddCustomFieldMapping), new { projectId = vm.ProjectId });
+}
+
+
+
 public async Task<bool> ExistsAsync(int projectId, int languageId, int fieldId)
 {
     return await (
