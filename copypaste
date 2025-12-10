@@ -1,6 +1,23 @@
+public class EditCustomFieldResourceViewModel
+{
+    public int ProjectId { get; set; }
+    public int MRFLanguageResourceId { get; set; }   // PK of MRFLanguageResource
+
+    public int SelectedLanguageId { get; set; }
+    public int SelectedFieldId { get; set; }
+
+    public string LanguageResourceText { get; set; }
+    public string DataTag { get; set; }
+
+    public List<SelectListItem> Languages { get; set; } = new();
+    public List<SelectListItem> CustomFields { get; set; } = new();
+}
+
+
+
 public async Task<EditCustomFieldResourceViewModel> LoadForEditAsync(int id, int projectId)
 {
-    // Load MRFLR + LanguageResource + Field
+    // Load MRFLanguageResource + LanguageResource + Field
     var record = await (
         from mr in _db.MRFLanguageResource
         join lr in _db.LanguageResource on mr.LanguageResourceId equals lr.Id
@@ -8,32 +25,35 @@ public async Task<EditCustomFieldResourceViewModel> LoadForEditAsync(int id, int
         where mr.Id == id && mr.ProjectId == projectId
         select new
         {
-            mr.Id,
-            mr.FieldId,
+            MRFLRId = mr.Id,
             lr.LanguageId,
             lr.LanguageResourceText,
+            FieldId = f.Id,
             f.DataTag
         }
     ).FirstOrDefaultAsync();
 
     if (record == null)
-        throw new Exception("Record not found.");
+        throw new Exception("Custom field translation not found.");
 
     var vm = new EditCustomFieldResourceViewModel
     {
         ProjectId = projectId,
-        MRFLanguageResourceId = record.Id,
+        MRFLanguageResourceId = record.MRFLRId,
         SelectedLanguageId = record.LanguageId,
         SelectedFieldId = record.FieldId,
         LanguageResourceText = record.LanguageResourceText,
         DataTag = record.DataTag
     };
 
-    // Load Languages for dropdown
+    // --------------------------------------------------
+    // 1️⃣ Load languages mapped to this project
+    // --------------------------------------------------
     vm.Languages = await (
         from ml in _db.MRFLanguage
         join l in _db.Language on ml.LanguageId equals l.Id
         where ml.ProjectId == projectId
+        orderby l.SortOrder
         select new SelectListItem
         {
             Value = l.Id.ToString(),
@@ -41,9 +61,12 @@ public async Task<EditCustomFieldResourceViewModel> LoadForEditAsync(int id, int
         }
     ).ToListAsync();
 
-    // Load fields for dropdown
+    // --------------------------------------------------
+    // 2️⃣ Load all custom fields for this project
+    // --------------------------------------------------
     vm.CustomFields = await _db.Fields
         .Where(f => f.ProjectId == projectId && f.IsStandardField == null)
+        .OrderBy(f => f.SortOrder)
         .Select(f => new SelectListItem
         {
             Value = f.Id.ToString(),
@@ -53,6 +76,10 @@ public async Task<EditCustomFieldResourceViewModel> LoadForEditAsync(int id, int
 
     return vm;
 }
+
+
+
+
 
 
 
