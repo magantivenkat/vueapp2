@@ -1,3 +1,46 @@
+public async Task<bool> ExistsAsync(int projectId, int languageId, int fieldId)
+{
+    return await (
+        from mr in _db.MRFLanguageResource
+        join lr in _db.LanguageResource on mr.LanguageResourceId equals lr.Id
+        where mr.ProjectId == projectId
+              && mr.FieldId == fieldId
+              && lr.LanguageId == languageId
+              && lr.IsActive
+        select mr.Id
+    ).AnyAsync();
+}
+public async Task<(bool Success, string Error)> TrySaveAsync(CustomFieldResourceViewModel vm)
+{
+    bool exists = await ExistsAsync(vm.ProjectId, vm.SelectedLanguageId, vm.SelectedFieldId);
+
+    if (exists)
+        return (false, "A resource already exists for this Language and Custom Field.");
+
+    await SaveAsync(vm); // your existing insert logic
+
+    return (true, null);
+}
+
+*****************************
+
+public async Task<CustomFieldResourceViewModel> ReloadPageWithSelectionsAsync(CustomFieldResourceViewModel vm)
+{
+    var page = await LoadPageAsync(vm.ProjectId);
+
+    // Keep user's selected values
+    page.MRFLanguageResourceId = vm.MRFLanguageResourceId;
+    page.SelectedLanguageId    = vm.SelectedLanguageId;
+    page.SelectedFieldId       = vm.SelectedFieldId;
+    page.LanguageResourceText  = vm.LanguageResourceText;
+    page.ValidationMessage     = vm.ValidationMessage;
+
+    return page;
+}
+
+
+
+
 using GoRegister.ApplicationCore.Domain.CustomFieldResource;
 using GoRegister.ApplicationCore.Domain.Projects.Services;
 using GoRegister.ApplicationCore.Domain.Settings.Services;
