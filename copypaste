@@ -1,3 +1,17 @@
+<select asp-for="SelectedLanguageId"
+        asp-items="Model.Languages"
+        class="form-control"
+        @(Model.IsEditMode ? "disabled" : "")>
+</select>
+
+<select asp-for="SelectedFieldId"
+        asp-items="Model.CustomFields"
+        class="form-control"
+        @(Model.IsEditMode ? "disabled" : "")>
+</select>
+
+
+
 public class EditCustomFieldResourceViewModel
 {
     public int ProjectId { get; set; }
