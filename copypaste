@@ -1,3 +1,79 @@
+
+[HttpGet("edit/{id:int}")]
+public async Task<IActionResult> Edit(int id, int projectId)
+{
+    var vm = await _service.LoadPageAsync(projectId);
+
+    // Load edit data into same VM
+    var editItem = await _service.LoadForEditAsync(id, projectId);
+
+    vm.MRFLanguageResourceId = editItem.MRFLanguageResourceId;
+    vm.SelectedLanguageId = editItem.SelectedLanguageId;
+    vm.SelectedFieldId = editItem.SelectedFieldId;
+    vm.LanguageResourceText = editItem.LanguageResourceText;
+    vm.DataTag = editItem.DataTag;
+
+    return View("Index", vm);
+}
+
+
+[HttpPost("save")]
+public async Task<IActionResult> Save(CustomFieldResourceViewModel vm)
+{
+    if (vm.MRFLanguageResourceId.HasValue)
+    {
+        await _service.UpdateAsync(vm);  // EDIT MODE
+    }
+    else
+    {
+        await _service.SaveAsync(vm);    // CREATE MODE
+    }
+
+    return RedirectToAction("Index", new { projectId = vm.ProjectId });
+}
+
+
+public async Task UpdateAsync(CustomFieldResourceViewModel vm)
+{
+    var mr = await _db.MRFLanguageResource
+        .FirstAsync(x => x.Id == vm.MRFLanguageResourceId);
+
+    var lr = await _db.LanguageResource
+        .FirstAsync(x => x.Id == mr.LanguageResourceId);
+
+    // Update LanguageResource
+    lr.LanguageId = vm.SelectedLanguageId;
+    lr.LanguageResourceText = vm.LanguageResourceText;
+
+    // Update DataTag based on selected field
+    var field = await _db.Fields.FirstAsync(f => f.Id == vm.SelectedFieldId);
+    lr.DataTag = field.DataTag;
+
+    // Update MRFLanguageResource
+    mr.FieldId = vm.SelectedFieldId;
+
+    await _db.SaveChangesAsync();
+}
+
+
+<button class="btn btn-success mt-3">
+    @(Model.IsEditMode ? "Update" : "Save")
+</button>
+
+<input type="hidden" asp-for="MRFLanguageResourceId" />
+<a asp-action="Edit"
+   asp-route-projectId="@Model.ProjectId"
+   asp-route-id="@item.Id"
+   class="btn btn-primary btn-sm">
+   Edit
+</a>
+
+
+
+
+
+
+
 using Microsoft.AspNetCore.Mvc;
 using YourApp.ViewModels;
 
