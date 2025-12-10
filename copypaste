@@ -1,3 +1,35 @@
+<button type="button" class="btn btn-secondary mt-3" id="clearForm">
+    Clear
+</button>
+
+<select asp-for="IsActive" class="form-control" id="IsActive">
+
+
+@section Scripts {
+<script>
+    document.getElementById("clearForm").addEventListener("click", function () {
+
+        // Clear dropdowns ONLY if we are not in edit mode
+        var isEditMode = @Model.IsEditMode.ToString().ToLower();
+
+        if (!isEditMode) {
+            document.getElementById("SelectedLanguageId").value = "";
+            document.getElementById("SelectedFieldId").value = "";
+        }
+
+        // Clear language resource textbox
+        document.getElementById("LanguageResourceText").value = "";
+
+        // Clear IsActive dropdown (only when creating)
+        if (!isEditMode) {
+            document.getElementById("IsActive").value = "true";
+        }
+    });
+</script>
+}
+
+
+
 @* Hidden fields required ONLY for Edit mode *@
     @if (Model.IsEditMode)
     {
