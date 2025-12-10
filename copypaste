@@ -1,3 +1,10 @@
+@* Hidden fields required ONLY for Edit mode *@
+    @if (Model.IsEditMode)
+    {
+        <input type="hidden" name="SelectedLanguageId" value="@Model.SelectedLanguageId" />
+        <input type="hidden" name="SelectedFieldId" value="@Model.SelectedFieldId" />
+    }
+
 @if (Model.HasError)
 {
     <div class="alert alert-danger">@Model.ValidationMessage</div>
