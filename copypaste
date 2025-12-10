@@ -1,3 +1,90 @@
+using GoRegister.ApplicationCore.Data.Models;
+using GoRegister.ApplicationCore.Domain.Clients;
+using GoRegister.ApplicationCore.Domain.Projects.Services;
+using GoRegister.ApplicationCore.Domain.CustomFieldResource;
+using GoRegister.ApplicationCore.Domain.Settings.Models;
+using GoRegister.ApplicationCore.Domain.Settings.Services;
+using GoRegister.Areas.Admin.Controllers;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.CodeAnalysis;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Security.Claims;
+using System.Threading.Tasks;
+
+namespace GoRegister.Areas.Admin.Features.CustomFieldMapping
+{
+	public class CustomFieldMappingController : ProjectAdminControllerBase
+	{
+		private readonly IProjectService _projectService;
+		private readonly ISettingsService _settingsService;
+		private readonly IClientService _clientservice;
+		private readonly ICustomFieldResourceCacheService _customFieldMappingService;
+
+		public static int ProjectId { get; set; }
+		public static string ClientUuid { get; set; }
+		public static int UserId { get; set; }
+		public static string AddEdit { get; set; }
+		public CustomFieldMappingController(ICustomFieldResourceCacheService languageMappingService, IProjectService projectService, ISettingsService settingsService, IClientService clientService)
+		{
+			_customFieldMappingService = languageMappingService;
+			_projectService = projectService;
+			_settingsService = settingsService;
+			_clientservice = clientService;
+		}
+
+		[HttpGet]
+		public async Task<IActionResult> AddCustomFieldMapping(int projectId)
+		{
+			var vm = await _customFieldMappingService.LoadPageAsync(projectId);
+			return View(vm);
+		}
+
+		[HttpPost]
+		public async Task<IActionResult> AddCustomFieldMapping([FromForm] CustomFieldResourceViewModel vm)
+		{
+			if (vm.SelectedLanguageId != 0 && vm.SelectedFieldId != 0 && !string.IsNullOrWhiteSpace(vm.LanguageResourceText))
+			{
+				if (vm.MRFLanguageResourceId.HasValue)
+				{
+					await _customFieldMappingService.UpdateAsync(vm);  // EDIT MODE
+				}
+				else
+				{
+					await _customFieldMappingService.SaveAsync(vm);    // CREATE MODE
+				}
+			}
+			return RedirectToAction(nameof(AddCustomFieldMapping));
+		}
+
+		[HttpPost("delete")]
+		public async Task<IActionResult> Delete(int id, int projectId)
+		{
+			await _customFieldMappingService.DeleteAsync(id, projectId);
+			return RedirectToAction(nameof(AddCustomFieldMapping));
+		}
+
+		[HttpGet("edit")]
+		public async Task<IActionResult> Edit(int id, int projectId)
+		{
+			var vm = await _customFieldMappingService.LoadPageAsync(projectId);
+
+			var editItem = await _customFieldMappingService.LoadForEditAsync(id, projectId);
+
+			vm.MRFLanguageResourceId = editItem.MRFLanguageResourceId;
+			vm.SelectedLanguageId = editItem.SelectedLanguageId;
+			vm.SelectedFieldId = editItem.SelectedFieldId;
+			vm.LanguageResourceText = editItem.LanguageResourceText;
+			vm.DataTag = editItem.DataTag;
+
+			return View(nameof(AddCustomFieldMapping), vm);
+		}
+	}
+}
+
+***********************
+
 @using GoRegister.ApplicationCore.Domain.CustomFieldResource
 @model GoRegister.ApplicationCore.Domain.CustomFieldResource.CustomFieldResourceViewModel
 <h2>Custom Field Resource</h2>
