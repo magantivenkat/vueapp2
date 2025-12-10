@@ -8,7 +8,6 @@
 }
 
 
-
 [HttpPost]
 public async Task<IActionResult> AddCustomFieldMapping([FromForm] CustomFieldResourceViewModel vm)
 {
