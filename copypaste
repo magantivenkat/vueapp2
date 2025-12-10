@@ -1,3 +1,14 @@
+@if (Model.HasError)
+{
+    <div class="alert alert-danger">@Model.ValidationMessage</div>
+}
+@if (TempData["SuccessMessage"] is string msg)
+{
+    <div class="alert alert-success">@msg</div>
+}
+
+
+
 [HttpPost]
 public async Task<IActionResult> AddCustomFieldMapping([FromForm] CustomFieldResourceViewModel vm)
 {
