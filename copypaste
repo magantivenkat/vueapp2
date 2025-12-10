@@ -1,3 +1,316 @@
+@using GoRegister.ApplicationCore.Domain.CustomFieldResource
+@model GoRegister.ApplicationCore.Domain.CustomFieldResource.CustomFieldResourceViewModel
+
+<h2>Custom Field Resource</h2>
+
+<!-- ERROR MESSAGE (Inline Validation: duplicate, missing fields) -->
+@if (!string.IsNullOrEmpty(Model.ValidationMessage))
+{
+    <div class="alert alert-danger">
+        @Model.ValidationMessage
+    </div>
+}
+
+<!-- SUCCESS MESSAGE (Redirect-based) -->
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["SuccessMessage"]
+    </div>
+}
+
+<form asp-action="AddCustomFieldMapping"
+      asp-route-projectId="@Model.ProjectId"
+      method="post">
+
+    <input type="hidden" asp-for="ProjectId" />
+    <input type="hidden" asp-for="MRFLanguageResourceId" />
+
+    <div class="row">
+        <div class="col-md-4">
+            <label>Language Selection</label>
+            <select asp-for="SelectedLanguageId"
+                    asp-items="Model.Languages"
+                    class="form-control"
+                    disabled="@(Model.IsEditMode ? "disabled" : null)">
+                <option value="">-- choose --</option>
+            </select>
+        </div>
+
+        <div class="col-md-4">
+            <label>Custom Field</label>
+            <select asp-for="SelectedFieldId"
+                    asp-items="Model.CustomFields"
+                    class="form-control"
+                    disabled="@(Model.IsEditMode ? "disabled" : null)">
+                <option value="">-- choose --</option>
+            </select>
+        </div>
+
+        <div class="col-md-4">
+            <label>Language Resource</label>
+            <input asp-for="LanguageResourceText" class="form-control" />
+        </div>
+    </div>
+
+    <div class="col-md-2 mt-2">
+        <label>Active</label>
+        <select asp-for="IsActive" class="form-control"
+                disabled="@(Model.IsEditMode ? null : "disabled")">
+            <option value="true">Active</option>
+            <option value="false">Inactive</option>
+        </select>
+    </div>
+
+    <button class="btn btn-success mt-3" id="save">
+        @(Model.IsEditMode ? "Update" : "Save")
+    </button>
+</form>
+
+<hr />
+
+<h3>Language Resource Details</h3>
+
+<table class="table table-hover table-bordered">
+    <thead class="table-dark">
+        <tr>
+            <th>Language</th>
+            <th>Custom Field</th>
+            <th>Resource</th>
+            <th>Status</th>
+            <th>Edit</th>
+            <th>Delete</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        @foreach (var item in Model.ExistingResources)
+        {
+            <tr>
+                <td>@item.LanguageName</td>
+                <td>@item.FieldName</td>
+                <td>@item.ResourceText</td>
+                <td>@(item.IsActive ? "Active" : "Inactive")</td>
+                <td>
+                    <form asp-action="Edit"
+                          asp-route-id="@item.Id"
+                          asp-route-projectId="@Model.ProjectId"
+                          method="get">
+                        <button class="btn btn-primary btn-sm">Edit</button>
+                    </form>
+                </td>
+                <td>
+                    <form asp-action="Delete"
+                          asp-route-id="@item.Id"
+                          asp-route-projectId="@Model.ProjectId"
+                          method="post">
+                        <button class="btn btn-danger btn-sm">Delete</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+using GoRegister.ApplicationCore.Domain.CustomFieldResource;
+using GoRegister.ApplicationCore.Domain.Projects.Services;
+using GoRegister.ApplicationCore.Domain.Settings.Services;
+using GoRegister.ApplicationCore.Domain.Clients;
+using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
+
+namespace GoRegister.Areas.Admin.Features.CustomFieldMapping
+{
+    [Area("Admin")]
+    [Route("admin/project/{projectId:int}/customfieldmapping")]
+    public class CustomFieldMappingController : Controller
+    {
+        private readonly ICustomFieldResourceCacheService _service;
+
+        public CustomFieldMappingController(
+            ICustomFieldResourceCacheService service)
+        {
+            _service = service;
+        }
+
+        // LOAD PAGE
+        [HttpGet("")]
+        public async Task<IActionResult> AddCustomFieldMapping(int projectId)
+        {
+            var vm = await _service.LoadPageAsync(projectId);
+            return View(vm);
+        }
+
+        // SAVE (INSERT / UPDATE)
+        [HttpPost("")]
+        public async Task<IActionResult> AddCustomFieldMapping(
+            [FromForm] CustomFieldResourceViewModel vm,
+            int projectId)
+        {
+            // Required fields check
+            if (vm.SelectedLanguageId == 0 ||
+                vm.SelectedFieldId == 0 ||
+                string.IsNullOrWhiteSpace(vm.LanguageResourceText))
+            {
+                vm.ValidationMessage = "All fields are required.";
+                vm = await _service.ReloadPageWithSelectionsAsync(vm);
+                return View(vm);
+            }
+
+            // INSERT MODE
+            if (!vm.MRFLanguageResourceId.HasValue)
+            {
+                var exists = await _service.ExistsAsync(projectId,
+                                                        vm.SelectedLanguageId,
+                                                        vm.SelectedFieldId);
+
+                if (exists)
+                {
+                    vm.ValidationMessage = "A resource already exists for this Language + Custom Field.";
+                    vm = await _service.ReloadPageWithSelectionsAsync(vm);
+                    return View(vm);
+                }
+
+                await _service.SaveAsync(vm);
+                TempData["SuccessMessage"] = "Translation added successfully!";
+            }
+            else
+            {
+                // UPDATE MODE
+                await _service.UpdateAsync(vm);
+                TempData["SuccessMessage"] = "Translation updated successfully!";
+            }
+
+            return RedirectToAction(nameof(AddCustomFieldMapping), new { projectId });
+        }
+
+        // EDIT
+        [HttpGet("edit/{id:int}")]
+        public async Task<IActionResult> Edit(int id, int projectId)
+        {
+            var vm = await _service.LoadPageAsync(projectId);
+            var editItem = await _service.LoadForEditAsync(id, projectId);
+
+            vm.MRFLanguageResourceId = editItem.MRFLanguageResourceId;
+            vm.SelectedLanguageId = editItem.SelectedLanguageId;
+            vm.SelectedFieldId = editItem.SelectedFieldId;
+            vm.LanguageResourceText = editItem.LanguageResourceText;
+            vm.DataTag = editItem.DataTag;
+            vm.IsActive = editItem.IsActive;
+
+            return View(nameof(AddCustomFieldMapping), vm);
+        }
+
+        // SOFT DELETE
+        [HttpPost("delete/{id:int}")]
+        public async Task<IActionResult> Delete(int id, int projectId)
+        {
+            await _service.DeleteAsync(id, projectId);
+            TempData["SuccessMessage"] = "Translation deleted successfully!";
+            return RedirectToAction(nameof(AddCustomFieldMapping), new { projectId });
+        }
+    }
+}
+
+
+
+
+*************************************************************************************************
+
+public async Task<bool> ExistsAsync(int projectId, int languageId, int fieldId)
+{
+    return await (
+        from mr in _db.MRFLanguageResource
+        join lr in _db.LanguageResource on mr.LanguageResourceId equals lr.Id
+        where mr.ProjectId == projectId
+              && mr.FieldId == fieldId
+              && lr.LanguageId == languageId
+              && lr.IsActive
+        select mr.Id
+    ).AnyAsync();
+}
+
+public async Task<(bool Success, string Error)> TrySaveAsync(CustomFieldResourceViewModel vm)
+{
+    bool exists = await ExistsAsync(vm.ProjectId, vm.SelectedLanguageId, vm.SelectedFieldId);
+
+    if (exists)
+        return (false, "A resource already exists for this Language and Custom Field.");
+
+    await SaveAsync(vm); // your existing insert logic
+
+    return (true, null);
+}
+
+
+[HttpPost]
+public async Task<IActionResult> AddCustomFieldMapping([FromForm] CustomFieldResourceViewModel vm)
+{
+    // Validation
+    if (vm.SelectedLanguageId == 0 || vm.SelectedFieldId == 0 || string.IsNullOrWhiteSpace(vm.LanguageResourceText))
+    {
+        vm.ValidationMessage = "All fields are required.";
+        vm = await _customFieldMappingService.ReloadPageWithSelectionsAsync(vm);
+        return View(vm);
+    }
+
+    // CREATE MODE
+    if (!vm.MRFLanguageResourceId.HasValue)
+    {
+        var result = await _customFieldMappingService.TrySaveAsync(vm);
+
+        if (!result.Success)
+        {
+            vm.ValidationMessage = result.Error;
+
+            // Reload page + keep dropdowns selected
+            vm = await _customFieldMappingService.ReloadPageWithSelectionsAsync(vm);
+
+            return View(vm); // show same page with error
+        }
+    }
+    else
+    {
+        // UPDATE MODE (still allowed)
+        await _customFieldMappingService.UpdateAsync(vm);
+    }
+
+    return RedirectToAction(nameof(AddCustomFieldMapping), new { projectId = vm.ProjectId });
+}
+
+public async Task<CustomFieldResourceViewModel> ReloadPageWithSelectionsAsync(CustomFieldResourceViewModel vm)
+{
+    var page = await LoadPageAsync(vm.ProjectId);
+
+    // Keep user's selected values
+    page.MRFLanguageResourceId = vm.MRFLanguageResourceId;
+    page.SelectedLanguageId    = vm.SelectedLanguageId;
+    page.SelectedFieldId       = vm.SelectedFieldId;
+    page.LanguageResourceText  = vm.LanguageResourceText;
+    page.ValidationMessage     = vm.ValidationMessage;
+
+    return page;
+}
+
+
+@if (Model.HasError)
+{
+    <div class="alert alert-danger">
+        @Model.ValidationMessage
+    </div>
+}
+
+@if (!string.IsNullOrEmpty(Model.ValidationMessage))
+{
+    <div class="alert alert-danger">
+        @Model.ValidationMessage
+    </div>
+}
+
+
+
+###########################################################################################333333
+
 using GoRegister.ApplicationCore.Data.Models;
 using GoRegister.ApplicationCore.Domain.Clients;
 using GoRegister.ApplicationCore.Domain.Projects.Services;
