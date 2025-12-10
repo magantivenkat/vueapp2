@@ -1,3 +1,60 @@
+public async Task<EditCustomFieldResourceViewModel> LoadForEditAsync(int id, int projectId)
+{
+    // Load MRFLR + LanguageResource + Field
+    var record = await (
+        from mr in _db.MRFLanguageResource
+        join lr in _db.LanguageResource on mr.LanguageResourceId equals lr.Id
+        join f in _db.Fields on mr.FieldId equals f.Id
+        where mr.Id == id && mr.ProjectId == projectId
+        select new
+        {
+            mr.Id,
+            mr.FieldId,
+            lr.LanguageId,
+            lr.LanguageResourceText,
+            f.DataTag
+        }
+    ).FirstOrDefaultAsync();
+
+    if (record == null)
+        throw new Exception("Record not found.");
+
+    var vm = new EditCustomFieldResourceViewModel
+    {
+        ProjectId = projectId,
+        MRFLanguageResourceId = record.Id,
+        SelectedLanguageId = record.LanguageId,
+        SelectedFieldId = record.FieldId,
+        LanguageResourceText = record.LanguageResourceText,
+        DataTag = record.DataTag
+    };
+
+    // Load Languages for dropdown
+    vm.Languages = await (
+        from ml in _db.MRFLanguage
+        join l in _db.Language on ml.LanguageId equals l.Id
+        where ml.ProjectId == projectId
+        select new SelectListItem
+        {
+            Value = l.Id.ToString(),
+            Text = l.LanguageName
+        }
+    ).ToListAsync();
+
+    // Load fields for dropdown
+    vm.CustomFields = await _db.Fields
+        .Where(f => f.ProjectId == projectId && f.IsStandardField == null)
+        .Select(f => new SelectListItem
+        {
+            Value = f.Id.ToString(),
+            Text = f.FieldName ?? f.DataTag
+        })
+        .ToListAsync();
+
+    return vm;
+}
+
+
 
 [HttpGet("edit/{id:int}")]
 public async Task<IActionResult> Edit(int id, int projectId)
