@@ -1,3 +1,177 @@
+@using GoRegister.ApplicationCore.Domain.ServiceLanguageMapping
+@model GoRegister.ApplicationCore.Domain.ServiceLanguageMapping.ServiceLanguageMappingModel
+<div class="card">
+	<div class="card-header">
+		<h3>
+			MRF Language Mapping
+		</h3>
+	</div>
+	<div class="card-body">
+		<div class="row">
+			<div class="col-md-4">
+				@using (Html.BeginForm())
+				{
+					<div class="form-group">
+						<label asp-for="RequestLanguage">Select Languages(s)</label>
+						<select asp-for="LanguageId" class="auto-complete-select form-control">
+							@if (ViewBag.LanguageList != null)
+							{
+								foreach (var cty in ViewBag.LanguageList)
+								{
+									<option value="@cty.Value">@cty.Text</option>
+								}
+							}
+						</select>
+						<label id="smsg" class="text-danger">@ViewBag.Smessage</label>
+						<input type="hidden" id="rql" asp-for="RequestLanguage" />
+						<input type="hidden" id="rqlid" asp-for="LanguageId" />
+						<input type="hidden" id="addedit" asp-for="AddEdit" />						
+					</div>
+					<div class="form-group">
+						<label>IsActive</label>
+						<select asp-for="IsActive" class="form-control" id="IsActive">
+							<option value="true">Active</option>
+							<option value="false">InActive</option>
+						</select>
+					</div>
+					<div>
+						<input class="btn btn-success mt-2" type="submit" value="Save" id="save" />
+						<a class="btn btn-success mt-2" id="cancel" onclick="cancel()">Cancel</a>
+					</div>
+				}
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="card">
+	<div class="card-header">
+		<h3>
+			Mapped Language(s)
+		</h3>
+	</div>
+	<div class="card-body">
+		<table class="table table-hover table-bordered">
+			<thead class="table-dark">
+				<tr>
+					<td style="width:30%">Language(s)</td>
+					<td style="width:30%">IsActive</td>
+					<td style="width:20%">Edit</td>
+					<td style="width:20%">Delete</td>
+				</tr>
+			</thead>
+			<tbody>
+				@{
+					var mappingList = ViewBag.ServiceLanguageMappingList as List<ServiceLanguageMappingModel>;
+				}
+				@if (mappingList == null || !mappingList.Any())
+				{
+					<tr>
+						<td colspan="2" class="text-center">No language mapped</td>
+					</tr>
+				}
+				else
+				{
+					foreach (var dt in mappingList)
+					{
+						<tr>
+							<td style="width:30%">
+								@dt.RequestLanguage
+							</td> 
+							<td style="width:30%">
+								@(dt.IsActive ? "Active" : "InActive")
+							</td>
+							<td style="width:20%">
+								<button id="editmap" onclick="edit('@dt.LanguageId',this)" class="btn btn-primary btn-sm">Edit</button>
+							</td>
+							<td style="width:20%">
+								<button id="deletemap" onclick="deletemap('@dt.LanguageId',this)" class="btn btn-danger btn-sm">Delete</button>
+							</td>
+						</tr>
+					}
+				}
+			</tbody>
+		</table>
+	</div>
+</div>
+
+@section Scripts {
+	<script>
+
+		$(document).ready(function () {
+			$('.auto-complete-select').select2({
+				multiple: true,
+				placeholder: '~ choose ~',
+				allowClear: true
+			});
+		});
+		$(function () {
+			$("#save").click(function () {
+				var dt = $('.auto-complete-select').val();
+				var isActive = $("#IsActive").val();
+				if (dt == '') {
+					$('#smsg').text('Please select a language.');
+					return;
+				} else {
+					$('#smsg').text('');
+				}
+				$("#rql").val(dt);
+				$("#rqlid").val(isActive);
+			});
+		});
+
+		function edit(langId, e) {
+			var url = `/admin/project/${@ViewBag.ProjectId}/LanguageMapping/Edit`;
+			$.ajax({
+				url: url,
+				data: { langid: langId },
+				type: 'GET',
+				success: function (data) {
+					$("#rqctid").val(data.languageId);
+					$("#IsActive").val(data.isActive.toString());
+					$(".auto-complete-select").val([data.languageId]).trigger('change');
+					$('.auto-complete-select').prop('disabled', true);
+					$("#addedit").val("Edit");
+					$("#save").val("Update");
+				},
+				error: function () {
+					alert("Failed to load editing item.");
+				}
+			});
+		}
+		function cancel() {
+			$(".auto-complete-select").prop('disabled', false);
+			$(".auto-complete-select").val(null).trigger('change');
+			$("#IsActive").val("true");
+			$("#addedit").val("Add");
+			$("#save").val("Save");
+			$("#rqctid").val("");
+		}
+		// function cancel() {
+		// 	$(".auto-complete-select").val(null).trigger('change');
+		// 	$('#smsg').text('');
+		// }
+		function deletemap(id, e) {
+			var url = '/admin/project/' + @ViewBag.ProjectId + '/LanguageMapping/Delete'
+			$.ajax({
+				url: url,
+				data: { langid: id },
+				type: 'GET',
+				datatype: 'json',
+				success: function (r) {
+					$(e).closest('tr').remove();
+					$("#lblcount").text(r);
+				},
+				error: function (e) {
+					alert(e);
+				},
+			});
+		}
+	</script>
+}
+
+
+
 using FluentValidation.Resources;
 using GoRegister.ApplicationCore.Data.Models;
 using GoRegister.ApplicationCore.Domain.Clients;
