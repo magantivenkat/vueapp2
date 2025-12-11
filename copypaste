@@ -1,3 +1,302 @@
+using GoRegister.ApplicationCore.Data.Models;
+using GoRegister.ApplicationCore.Domain.Clients;
+using GoRegister.ApplicationCore.Domain.Projects.Services;
+using GoRegister.ApplicationCore.Domain.ServiceLanguageMapping;
+using GoRegister.ApplicationCore.Domain.Settings.Models;
+using GoRegister.ApplicationCore.Domain.Settings.Services;
+using GoRegister.Areas.Admin.Controllers;
+using Microsoft.AspNetCore.Mvc;
+using System.Linq;
+using System.Security.Claims;
+using System.Threading.Tasks;
+using System.Collections.Generic;
+
+namespace GoRegister.Areas.Admin.Features.LanguageMapping
+{
+	public class LanguageMappingController : ProjectAdminControllerBase
+	{
+		private readonly IServiceLanguageMappingService _languageMappingService;
+		private readonly ISettingsService _settingsService;
+		private readonly IClientService _clientservice;
+
+		public static int ProjectId { get; set; }
+		public static string ClientUuid { get; set; }
+		public static int UserId { get; set; }
+
+		public LanguageMappingController(
+			IServiceLanguageMappingService languageMappingService,
+			ISettingsService settingsService,
+			IClientService clientService)
+		{
+			_languageMappingService = languageMappingService;
+			_settingsService = settingsService;
+			_clientservice = clientService;
+		}
+
+		// ---------------------- PAGE LOAD ----------------------
+		[HttpGet]
+		public async Task<IActionResult> AddLanguage()
+		{
+			var project = await _settingsService.GetSettingsAsync<GeneralSettingsModel>();
+			var client = await _clientservice.GetClientById(project.ClientId);
+
+			ProjectId = project.Id;
+			ClientUuid = client.ClientUuid;
+			UserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+
+			await LoadData();
+
+			return View(new ServiceLanguageMappingModel { AddEdit = "Add", IsActive = true });
+		}
+
+		// ---------------------- SAVE & UPDATE ----------------------
+		[HttpPost]
+		public async Task<IActionResult> AddLanguage([FromForm] ServiceLanguageMappingModel model)
+		{
+			await LoadData();
+
+			// ----- UPDATE -----
+			if (model.AddEdit == "Edit")
+			{
+				await _languageMappingService.UpdateMRFLanguage(ProjectId, model.LanguageId, model.IsActive);
+
+				ViewBag.Smessage = "Language updated successfully.";
+
+				return View(model);
+			}
+
+			// ----- CREATE -----
+			if (model.LanguageId <= 0)
+			{
+				ViewBag.Smessage = "Please select a language.";
+				return View(model);
+			}
+
+			var existing = await _languageMappingService.GetList(ProjectId);
+
+			if (existing.Any(x => x.LanguageId == model.LanguageId))
+			{
+				ViewBag.Smessage = "This language already exists for this MRF.";
+				return View(model);
+			}
+
+			// Create new MRFLanguage entry
+			var dto = new MRFLanguage
+			{
+				ProjectId = ProjectId,
+				LanguageId = model.LanguageId,
+				IsActive = model.IsActive
+			};
+
+			await _languageMappingService.CreateMRFLanguage(new List<MRFLanguage> { dto });
+			await _languageMappingService.CreateMRFLanguageResource(new List<MRFLanguage> { dto });
+
+			ViewBag.Smessage = "Language added successfully.";
+
+			await LoadData();
+			return View(new ServiceLanguageMappingModel { AddEdit = "Add", IsActive = true });
+		}
+
+		// ---------------------- LOAD GRID DATA ----------------------
+		public async Task LoadData()
+		{
+			ViewBag.ProjectId = ProjectId;
+			ViewBag.LanguageList = await _languageMappingService.LoadRequestLanguages();
+			ViewBag.ServiceLanguageMappingList = await _languageMappingService.GetList(ProjectId);
+		}
+
+		// ---------------------- DELETE ----------------------
+		public async Task<IActionResult> Delete(int langid)
+		{
+			await _languageMappingService.DeleteMRFLanguage(ProjectId, langid);
+			await _languageMappingService.DeleteMRFLanguageResource(ProjectId, langid);
+
+			return RedirectToAction("AddLanguage");
+		}
+
+		// ---------------------- EDIT AJAX ----------------------
+		public async Task<IActionResult> Edit(int projectId, int langid)
+		{
+			var item = await _languageMappingService.GetItem(projectId, langid);
+
+			if (item == null)
+				return NotFound();
+
+			return Json(new
+			{
+				languageId = item.LanguageId,
+				isActive = item.IsActive
+			});
+		}
+	}
+}
+
+
+@using GoRegister.ApplicationCore.Domain.ServiceLanguageMapping
+@model GoRegister.ApplicationCore.Domain.ServiceLanguageMapping.ServiceLanguageMappingModel
+
+<div class="card">
+    <div class="card-header">
+        <h3>MRF Language Mapping</h3>
+    </div>
+
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-5">
+
+                @using (Html.BeginForm("AddLanguage", "LanguageMapping", FormMethod.Post))
+                {
+                    <input type="hidden" asp-for="LanguageId" id="LanguageIdHidden" />
+                    <input type="hidden" asp-for="AddEdit" id="AddEdit" />
+
+                    @if (!string.IsNullOrWhiteSpace(ViewBag.Smessage))
+                    {
+                        <div class="alert alert-info">@ViewBag.Smessage</div>
+                    }
+
+                    <div class="form-group mb-3">
+                        <label>Select Language</label>
+
+                        <select id="ddlLanguages" class="auto-complete-select form-control">
+                            <option value="">~ choose ~</option>
+                            @foreach (var cty in ViewBag.LanguageList)
+                            {
+                                <option value="@cty.Value">@cty.Text</option>
+                            }
+                        </select>
+                        <span class="text-danger" id="LangValidation"></span>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label>IsActive</label>
+                        <select asp-for="IsActive" class="form-control" id="IsActive">
+                            <option value="true">Active</option>
+                            <option value="false">Inactive</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <button class="btn btn-success" id="saveBtn">
+                            @(Model.AddEdit == "Edit" ? "Update" : "Save")
+                        </button>
+
+                        <a class="btn btn-secondary" id="clearBtn">Clear</a>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<hr />
+
+<div class="card">
+    <div class="card-header">
+        <h3>Mapped Language(s)</h3>
+    </div>
+
+    <div class="card-body">
+        <table class="table table-bordered table-striped">
+            <thead class="table-dark">
+                <tr>
+                    <th>Language</th>
+                    <th>IsActive</th>
+                    <th>Edit</th>
+                    <th>Delete</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @if (ViewBag.ServiceLanguageMappingList == null || !((List<ServiceLanguageMappingModel>)ViewBag.ServiceLanguageMappingList).Any())
+                {
+                    <tr>
+                        <td colspan="4" class="text-center">No language mapped</td>
+                    </tr>
+                }
+                else
+                {
+                    foreach (var item in (List<ServiceLanguageMappingModel>)ViewBag.ServiceLanguageMappingList)
+                    {
+                        <tr>
+                            <td>@item.RequestLanguage</td>
+                            <td>@(item.IsActive ? "Active" : "Inactive")</td>
+                            <td>
+                                <button class="btn btn-primary btn-sm"
+                                        onclick="editItem(@item.LanguageId)">Edit</button>
+                            </td>
+                            <td>
+                                <button class="btn btn-danger btn-sm"
+                                        onclick="deleteItem(@item.LanguageId)">Delete</button>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $('#ddlLanguages').select2({
+                placeholder: '~ choose ~',
+                allowClear: true,
+                width: '100%'
+            });
+        });
+
+        $("#saveBtn").click(function () {
+            let langId = $("#ddlLanguages").val();
+
+            if (!langId) {
+                $("#LangValidation").text("Please select a language.");
+                return false;
+            }
+
+            $("#LanguageIdHidden").val(langId);
+            return true;
+        });
+
+        function editItem(langId) {
+            $.ajax({
+                url: `/admin/project/${@ViewBag.ProjectId}/LanguageMapping/Edit`,
+                data: { langid: langId },
+                type: 'GET',
+                success: function (data) {
+                    $("#LanguageIdHidden").val(data.languageId);
+                    $("#ddlLanguages").val(data.languageId).trigger('change');
+                    $("#IsActive").val(data.isActive.toString());
+                    $("#AddEdit").val("Edit");
+                    $("#saveBtn").text("Update");
+                },
+                error: function () {
+                    alert("Error loading selected item.");
+                }
+            });
+        }
+
+        function deleteItem(langId) {
+            if (!confirm("Are you sure?")) return;
+
+            window.location.href =
+                `/admin/project/${@ViewBag.ProjectId}/LanguageMapping/Delete?langid=${langId}`;
+        }
+
+        $("#clearBtn").click(function () {
+            $("#ddlLanguages").val("").trigger('change');
+            $("#LanguageIdHidden").val("");
+            $("#IsActive").val("true");
+            $("#AddEdit").val("Add");
+            $("#saveBtn").text("Save");
+            $("#LangValidation").text("");
+        });
+    </script>
+}
+
+
+***********************************************************************************************************************
+
 using FluentValidation.Resources;
 using GoRegister.ApplicationCore.Data.Models;
 using GoRegister.ApplicationCore.Domain.Clients;
