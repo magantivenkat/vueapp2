@@ -1,3 +1,132 @@
+[HttpGet("Edit")]
+public async Task<IActionResult> Edit(int projectId, int langid)
+{
+    var item = await _languageMappingService.GetItem(projectId, langid);
+
+    if (item == null)
+        return NotFound();
+
+    return Json(new {
+        languageId = item.LanguageId,
+        isActive = item.IsActive
+    });
+}
+
+Task<MRFLanguage> GetItem(int projectId, int langId);
+public async Task<MRFLanguage> GetItem(int projectId, int langId)
+{
+    return await _db.MRFLanguage
+        .FirstOrDefaultAsync(x => x.ProjectId == projectId && x.LanguageId == langId);
+}
+Task UpdateMRFLanguage(int projectId, int langId, bool isActive);
+public async Task UpdateMRFLanguage(int projectId, int langId, bool isActive)
+{
+    var entity = await _db.MRFLanguage
+        .FirstOrDefaultAsync(x => x.ProjectId == projectId && x.LanguageId == langId);
+
+    if (entity != null)
+    {
+        entity.IsActive = isActive;
+        await _db.SaveChangesAsync();
+    }
+}
+
+
+
+<input type="hidden" id="addedit" asp-for="AddEdit" />
+<input type="hidden" id="rqctid" asp-for="LanguageId" />
+
+function edit(langId) {
+
+    var url = `/admin/project/${@ViewBag.ProjectId}/LanguageMapping/Edit`;
+
+    $.ajax({
+        url: url,
+        data: { langid: langId },
+        type: 'GET',
+        success: function (data) {
+
+            // Set hidden language ID
+            $("#rqctid").val(data.languageId);
+
+            // Populate IsActive
+            $("#IsActive").val(data.isActive.toString());
+
+            // Disable language select2
+            $(".auto-complete-select").val([data.languageId]).trigger('change');
+            $('.auto-complete-select').prop('disabled', true);
+
+            // Show edit mode
+            $("#addedit").val("Edit");
+            $("#save").val("Update");
+        },
+        error: function () {
+            alert("Failed to load editing item.");
+        }
+    });
+}
+function cancel() {
+    $(".auto-complete-select").prop('disabled', false);
+    $(".auto-complete-select").val(null).trigger('change');
+    $("#IsActive").val("true");
+    $("#addedit").val("Add");
+    $("#save").val("Save");
+    $("#rqctid").val("");
+}
+
+
+[HttpPost]
+public async Task<IActionResult> AddLanguage([FromForm] ServiceLanguageMappingModel model)
+{
+    await LoadData();
+
+    if (model.AddEdit == "Edit")
+    {
+        // Update language IsActive only
+        await _languageMappingService.UpdateMRFLanguage(ProjectId, model.LanguageId, model.IsActive);
+        ViewBag.Smessage = "Language updated successfully.";
+        return View(model);
+    }
+
+    // ---------- ADD LOGIC (existing) ----------
+    if (!ModelState.IsValid || model.LanguageId <= 0)
+    {
+        ViewBag.Smessage = "Please select a language.";
+        return View(model);
+    }
+
+    var existing = await _languageMappingService.GetList(ProjectId);
+    var existingIds = existing.Select(x => x.LanguageId).ToHashSet();
+
+    var langIds = model.RequestLanguage.Split(",", StringSplitOptions.RemoveEmptyEntries);
+
+    List<MRFLanguage> newItems = new();
+
+    foreach (var lang in langIds)
+    {
+        int id = int.Parse(lang);
+        if (!existingIds.Contains(id))
+        {
+            newItems.Add(new MRFLanguage { ProjectId = ProjectId, LanguageId = id, IsActive = true });
+        }
+    }
+
+    if (!newItems.Any())
+    {
+        ViewBag.Smessage = "Language already exists.";
+        return View(model);
+    }
+
+    await _languageMappingService.CreateMRFLanguage(newItems);
+    ViewBag.Smessage = "Language added successfully.";
+
+    return View(model);
+}
+
+
+
+==================================================================================================================================
+
 @using GoRegister.ApplicationCore.Domain.CustomFieldResource
 @model GoRegister.ApplicationCore.Domain.CustomFieldResource.CustomFieldResourceViewModel
 <h2>Custom Field Resource</h2>
