@@ -1,3 +1,378 @@
+public class LanguageMappingViewModel
+{
+    // ADD MODE – Multi-select
+    public List<int> SelectedLanguageIds { get; set; } = new();
+
+    // EDIT MODE – Single language
+    public int SelectedLanguageId { get; set; }
+
+    // Hidden key for Edit mode
+    public int LanguageId { get; set; }
+
+    public bool IsActive { get; set; } = true;
+
+    public string AddEdit { get; set; } = "Add";
+
+    // Dropdown list
+    public List<SelectListItem> Languages { get; set; } = new();
+
+    // Table/grid list
+    public List<LanguageMappingGridItem> ExistingLanguages { get; set; } = new();
+
+    public string Message { get; set; }
+}
+
+public class LanguageMappingGridItem
+{
+    public int LanguageId { get; set; }
+    public string LanguageName { get; set; }
+    public bool IsActive { get; set; }
+}
+
+
+
+service
+-------
+
+public async Task<LanguageMappingViewModel> LoadPageAsync(int projectId)
+{
+    var vm = new LanguageMappingViewModel();
+
+    // Load dropdown languages (ACTIVE languages only)
+    vm.Languages = await _db.Language
+        .Where(l => l.IsActive)
+        .Select(l => new SelectListItem
+        {
+            Value = l.Id.ToString(),
+            Text = l.LanguageName
+        }).ToListAsync();
+
+    // Load existing MRFLanguage grid
+    vm.ExistingLanguages = await _db.MRFLanguage
+        .Where(x => x.ProjectId == projectId && x.IsActive)
+        .Select(x => new LanguageMappingGridItem
+        {
+            LanguageId = x.LanguageId,
+            LanguageName = x.Language.LanguageName,
+            IsActive = x.IsActive
+        })
+        .ToListAsync();
+
+    return vm;
+}
+
+
+public async Task<(bool success, string message)> SaveAsync(int projectId, LanguageMappingViewModel vm)
+{
+    var existingLangs = await _db.MRFLanguage
+        .Where(x => x.ProjectId == projectId)
+        .Select(x => x.LanguageId)
+        .ToListAsync();
+
+    var newLanguages = vm.SelectedLanguageIds
+        .Where(id => !existingLangs.Contains(id))
+        .ToList();
+
+    if (!newLanguages.Any())
+        return (false, "Selected language(s) already exist.");
+
+    foreach (var langId in newLanguages)
+    {
+        // Insert MRFLanguage
+        var mrfLang = new MRFLanguage
+        {
+            ProjectId = projectId,
+            LanguageId = langId,
+            IsActive = true
+        };
+        _db.MRFLanguage.Add(mrfLang);
+
+        // Create MRFLanguageResource entries
+        await CreateLanguageResourceRowsAsync(projectId, langId);
+    }
+
+    await _db.SaveChangesAsync();
+    return (true, "Language(s) added successfully.");
+}
+
+
+-----------------------------------------------------------------------------------
+
+private async Task CreateLanguageResourceRowsAsync(int projectId, int languageId)
+{
+    var languageResources = await _db.LanguageResource
+        .Where(lr => lr.LanguageId == languageId)
+        .ToListAsync();
+
+    var projectFields = await _db.Fields
+        .Where(f => f.ProjectId == projectId)
+        .ToListAsync();
+
+    foreach (var lr in languageResources)
+    {
+        var field = projectFields.FirstOrDefault(f =>
+            f.DataTag != null &&
+            f.DataTag.ToLower() == lr.DataTag.ToLower());
+
+        if (field == null)
+            continue;
+
+        _db.MRFLanguageResource.Add(new MRFLanguageResource
+        {
+            ProjectId = projectId,
+            FieldId = field.Id,
+            LanguageResourceId = lr.Id,
+            LanguageId = languageId,
+            IsActive = true
+        });
+    }
+}
+
+-----------------------------------------------------------------------------------------
+
+
+public async Task<LanguageMappingViewModel> LoadForEditAsync(int projectId, int langId)
+{
+    var mrfLanguage = await _db.MRFLanguage
+        .FirstOrDefaultAsync(x => x.ProjectId == projectId && x.LanguageId == langId);
+
+    if (mrfLanguage == null)
+        return null;
+
+    var vm = await LoadPageAsync(projectId);
+
+    vm.AddEdit = "Edit";
+    vm.LanguageId = langId;
+    vm.SelectedLanguageId = langId;
+    vm.IsActive = mrfLanguage.IsActive;
+
+    return vm;
+}
+
+
+---------------------------------------------------
+
+public async Task UpdateAsync(int projectId, LanguageMappingViewModel vm)
+{
+    var lang = await _db.MRFLanguage
+        .FirstAsync(x => x.ProjectId == projectId && x.LanguageId == vm.SelectedLanguageId);
+
+    lang.IsActive = vm.IsActive;
+
+    // Update MRFLanguageResource
+    var resources = await _db.MRFLanguageResource
+        .Where(x => x.ProjectId == projectId && x.LanguageId == vm.SelectedLanguageId)
+        .ToListAsync();
+
+    foreach (var r in resources)
+        r.IsActive = vm.IsActive;
+
+    await _db.SaveChangesAsync();
+}
+
+-----------------------------------------------------
+
+public async Task DeleteAsync(int projectId, int languageId)
+{
+    var lang = await _db.MRFLanguage
+        .FirstAsync(x => x.ProjectId == projectId && x.LanguageId == languageId);
+
+    lang.IsActive = false;
+
+    var res = await _db.MRFLanguageResource
+        .Where(x => x.ProjectId == projectId && x.LanguageId == languageId)
+        .ToListAsync();
+
+    foreach (var r in res)
+        r.IsActive = false;
+
+    await _db.SaveChangesAsync();
+}
+
+----------------------------------------------
+
+Controller
+==========
+
+public class LanguageMappingController : ProjectAdminControllerBase
+{
+    private readonly IServiceLanguageMappingService _service;
+    private readonly ISettingsService _settings;
+
+    public LanguageMappingController(IServiceLanguageMappingService service, ISettingsService settings)
+    {
+        _service = service;
+        _settings = settings;
+    }
+
+    private async Task<int> GetProjectIdAsync()
+    {
+        var settings = await _settings.GetSettingsAsync<GeneralSettingsModel>();
+        return settings.Id;
+    }
+
+    // PAGE LOAD
+    [HttpGet]
+    public async Task<IActionResult> AddLanguage()
+    {
+        int projectId = await GetProjectIdAsync();
+        var vm = await _service.LoadPageAsync(projectId);
+        return View(vm);
+    }
+
+    // SAVE (Add + Edit)
+    [HttpPost]
+    public async Task<IActionResult> AddLanguage(LanguageMappingViewModel vm)
+    {
+        int projectId = await GetProjectIdAsync();
+
+        if (vm.AddEdit == "Edit")
+        {
+            await _service.UpdateAsync(projectId, vm);
+
+            vm.Message = "Language updated successfully.";
+            return View(await _service.LoadPageAsync(projectId));
+        }
+
+        var result = await _service.SaveAsync(projectId, vm);
+        vm.Message = result.message;
+
+        return View(await _service.LoadPageAsync(projectId));
+    }
+
+    // EDIT
+    [HttpGet]
+    public async Task<IActionResult> Edit(int projectId, int langId)
+    {
+        var vm = await _service.LoadForEditAsync(projectId, langId);
+        return View("AddLanguage", vm);
+    }
+
+    // DELETE (Soft delete)
+    [HttpPost]
+    public async Task<IActionResult> Delete(int projectId, int langId)
+    {
+        await _service.DeleteAsync(projectId, langId);
+        return RedirectToAction(nameof(AddLanguage));
+    }
+}
+
+
+html
+======
+@model LanguageMappingViewModel
+
+<h2>MRF Language Mapping</h2>
+
+@if (!string.IsNullOrWhiteSpace(Model.Message))
+{
+    <div class="alert alert-info">@Model.Message</div>
+}
+
+<form method="post">
+
+    <input type="hidden" asp-for="LanguageId" />
+    <input type="hidden" asp-for="AddEdit" />
+
+    <div class="row">
+
+        <div class="col-md-4">
+            <label>Select Language(s)</label>
+
+            @* ADD MODE *@
+            @if (Model.AddEdit == "Add")
+            {
+                <select asp-for="SelectedLanguageIds"
+                        asp-items="Model.Languages"
+                        class="form-control"
+                        multiple>
+                </select>
+            }
+
+            @* EDIT MODE *@
+            else
+            {
+                <select asp-for="SelectedLanguageId"
+                        asp-items="Model.Languages"
+                        class="form-control"
+                        disabled>
+                </select>
+            }
+        </div>
+
+        <div class="col-md-4">
+            <label>Is Active</label>
+            <select asp-for="IsActive" class="form-control">
+                <option value="true">Active</option>
+                <option value="false">Inactive</option>
+            </select>
+        </div>
+
+    </div>
+
+    <button type="submit" class="btn btn-success mt-3">
+        @(Model.AddEdit == "Edit" ? "Update" : "Save")
+    </button>
+
+    <a href="@Url.Action("AddLanguage")"
+       class="btn btn-secondary mt-3">Clear</a>
+
+</form>
+
+<hr />
+
+<h3>Mapped Languages</h3>
+
+<table class="table table-hover table-bordered">
+    <thead class="table-dark">
+    <tr>
+        <th>Language</th>
+        <th>IsActive</th>
+        <th>Edit</th>
+        <th>Delete</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    @foreach (var item in Model.ExistingLanguages)
+    {
+        <tr>
+            <td>@item.LanguageName</td>
+            <td>@(item.IsActive ? "Active" : "Inactive")</td>
+
+            <td>
+                <form method="get" asp-action="Edit"
+                      asp-route-projectId="@ViewBag.ProjectId"
+                      asp-route-langId="@item.LanguageId">
+                    <button class="btn btn-primary btn-sm">Edit</button>
+                </form>
+            </td>
+
+            <td>
+                <form method="post" asp-action="Delete"
+                      asp-route-projectId="@ViewBag.ProjectId"
+                      asp-route-langId="@item.LanguageId">
+                    <button class="btn btn-danger btn-sm">Delete</button>
+                </form>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+*******************************************************************************************************************************************************************
+
+
 @using GoRegister.ApplicationCore.Domain.ServiceLanguageMapping
 @model GoRegister.ApplicationCore.Domain.ServiceLanguageMapping.ServiceLanguageMappingModel
 
