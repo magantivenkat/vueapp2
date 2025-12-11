@@ -1,3 +1,171 @@
+using FluentValidation.Resources;
+using GoRegister.ApplicationCore.Data.Models;
+using GoRegister.ApplicationCore.Domain.Clients;
+using GoRegister.ApplicationCore.Domain.Countries;
+using GoRegister.ApplicationCore.Domain.Projects.Services;
+using GoRegister.ApplicationCore.Domain.ServiceCountryMapping;
+using GoRegister.ApplicationCore.Domain.ServiceLanguageMapping;
+using GoRegister.ApplicationCore.Domain.Settings.Models;
+using GoRegister.ApplicationCore.Domain.Settings.Services;
+using GoRegister.ApplicationCore.Framework;
+using GoRegister.Areas.Admin.Controllers;
+using Humanizer;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.CodeAnalysis;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
+using System.Security.Claims;
+using System.Threading.Tasks;
+
+namespace GoRegister.Areas.Admin.Features.LanguageMapping
+{
+	public class LanguageMappingController : ProjectAdminControllerBase
+	{
+
+		private readonly IServiceLanguageMappingService _languageMappingService;
+		private readonly IProjectService _projectService;
+		private readonly ISettingsService _settingsService;
+		private readonly IClientService _clientservice;
+		public static int ProjectId { get; set; }
+		public static string ClientUuid { get; set; }
+		public static int UserId { get; set; }
+		public static string AddEdit { get; set; }
+		public LanguageMappingController(IServiceLanguageMappingService languageMappingService, IProjectService projectService, ISettingsService settingsService, IClientService clientService)
+		{
+			_languageMappingService = languageMappingService;
+			_projectService = projectService;
+			_settingsService = settingsService;
+			_clientservice = clientService;
+		}
+
+		[HttpGet]
+		public async Task<IActionResult> AddLanguage()
+		{
+			var project = await _settingsService.GetSettingsAsync<GeneralSettingsModel>();
+			var client = await _clientservice.GetClientById(project.ClientId);
+			ProjectId = project.Id;
+			ClientUuid = client.ClientUuid;
+			UserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+			await LoadData();
+			AddEdit = "Add";
+			return View();
+		}
+
+		[HttpPost]
+		public async Task<IActionResult> AddLanguage([FromForm] ServiceLanguageMappingModel model)
+		{
+			await LoadData();
+			if (model.AddEdit == "Edit")
+			{
+				await _languageMappingService.UpdateMRFLanguage(ProjectId, model.LanguageId, model.IsActive);
+				ViewBag.Smessage = "Language updated successfully.";
+				return View(model);
+			}
+
+			if (!ModelState.IsValid || model.LanguageId <= 0)
+			{				
+				ViewBag.Smessage = "Please select a language.";
+				return View(model);
+			}
+
+			//var languageIds = model.RequestLanguage
+			//	.Split(",", StringSplitOptions.RemoveEmptyEntries)
+			//	.Select(ct => new MRFLanguage
+			//	{
+			//		ProjectId = ProjectId,
+			//		LanguageId = int.Parse(ct)
+			//	})
+			//	.ToList();
+
+			var languages = await _languageMappingService.GetLanguages();
+			var eng = languages.Where(l => l.LanguageCode.ToLower() == "en");
+
+			var existingLanguages = await _languageMappingService.GetList(ProjectId);
+			var existingLanguageIds = existingLanguages.Select(lang => lang.LanguageId).ToHashSet();
+
+			List<MRFLanguage> dtos = new List<MRFLanguage>();
+			int existLang = 0;
+			int newLang = 0;
+			var rqct = model.RequestLanguage.Split(",", StringSplitOptions.RemoveEmptyEntries);
+			foreach (string ct in rqct)
+			{
+				int languageId = int.Parse(ct);
+				if (!existingLanguageIds.Contains(languageId))
+				{
+					MRFLanguage dto = new MRFLanguage
+					{
+						ProjectId = ProjectId,
+						LanguageId = languageId
+					};
+					dtos.Add(dto);
+					newLang += 1;
+				}
+				else
+				{
+					existLang += 1;
+				}
+			}
+
+			if (!dtos.Any())
+			{
+				ViewBag.Smessage = "Selected languages are already added to the MRF";
+				await LoadData();
+				return View(model);
+			}
+
+			if (existLang > 0 && newLang > 0)
+			{
+				await _languageMappingService.CreateMRFLanguage(dtos);
+				await _languageMappingService.CreateMRFLanguageResource(dtos);
+				ViewBag.Smessage = "Some of selected languages are already exist and the other added successfully to the MRF.";
+				await LoadData();
+				return View(model);
+			}
+
+			await _languageMappingService.CreateMRFLanguage(dtos);
+			await _languageMappingService.CreateMRFLanguageResource(dtos);
+			ViewBag.Smessage = "Selected language(s) are successfully added to the MRF.";
+			await LoadData();
+			return View(model);
+		}
+
+		public async Task LoadData()
+		{
+			ViewBag.ProjectId = ProjectId;
+			ViewBag.LanguageList = await _languageMappingService.LoadRequestLanguages();
+			ViewBag.ServiceLanguageMappingList = await _languageMappingService.GetList(ProjectId);
+		}
+
+		public async Task<IActionResult> Delete(int langid)
+		{
+			await _languageMappingService.DeleteMRFLanguage(ProjectId, langid);
+			await _languageMappingService.DeleteMRFLanguageResource(ProjectId, langid);
+			ViewBag.Smessage = "Language successfully deleted.";
+			await LoadData();
+			return RedirectToAction("AddLanguage", "LanguageMapping", new { refresh = true });
+		}
+
+		public async Task<IActionResult> Edit(int projectId, int langid)
+		{
+			var item = await _languageMappingService.GetItem(projectId, langid);
+
+			if (item == null)
+				return NotFound();
+
+			return Json(new
+			{
+				languageId = item.LanguageId,
+				isActive = item.IsActive
+			});
+		}
+
+	}
+}
+
+=========================
+
 [HttpGet("Edit")]
 public async Task<IActionResult> Edit(int projectId, int langid)
 {
