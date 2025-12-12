@@ -1,3 +1,40 @@
+
+public async Task DeleteAsync(int projectId, int languageId)
+{
+    // Soft delete from MRFLanguage
+    var mrfLanguage = await _db.MRFLanguage
+        .FirstOrDefaultAsync(x => x.ProjectId == projectId && x.LanguageId == languageId);
+
+    if (mrfLanguage != null)
+    {
+        mrfLanguage.IsActive = false;
+    }
+
+    // STEP 1: Get all LanguageResource rows for THIS languageId
+    var langResourceIds = await _db.LanguageResource
+        .Where(lr => lr.LanguageId == languageId)
+        .Select(lr => lr.Id)
+        .ToListAsync();
+
+    if (langResourceIds.Any())
+    {
+        // STEP 2: Soft delete MRFLanguageResource rows based on LanguageResourceId
+        var mrfLangResources = await _db.MRFLanguageResource
+            .Where(m => m.ProjectId == projectId
+                     && langResourceIds.Contains(m.LanguageResourceId))
+            .ToListAsync();
+
+        foreach (var res in mrfLangResources)
+        {
+            res.IsActive = false;
+        }
+    }
+
+    await _db.SaveChangesAsync();
+}
+
+
+
 public class LanguageMappingViewModel
 {
     // ADD MODE – Multi-select
