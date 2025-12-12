@@ -1,3 +1,49 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using GoRegister.ApplicationCore.Data.Models;
+using Microsoft.AspNetCore.Mvc.Rendering;
+
+namespace GoRegister.ApplicationCore.Domain.ServiceLanguageMapping
+{
+    public class LanguageMappingViewModel
+    {
+		public int ProjectId { get; set; }
+		// ADD MODE – Multi-select
+		public List<int> SelectedLanguageIds { get; set; } = new();
+
+        // EDIT MODE – Single language
+        public int? SelectedLanguageId { get; set; }
+
+        // Hidden key for Edit mode
+        public int LanguageId { get; set; }
+
+        public bool IsActive { get; set; } = true;
+
+        public string AddEdit { get; set; } = "Add";
+		public bool IsEditMode => SelectedLanguageId.HasValue;
+
+		// Dropdown list
+		public List<SelectListItem> Languages { get; set; } = new();
+
+        // Table/grid list
+        public List<LanguageMappingGridItem> ExistingLanguages { get; set; } = new();
+
+        public string Message { get; set; }
+    }
+
+    public class LanguageMappingGridItem
+    {
+        public int LanguageId { get; set; }
+        public string LanguageName { get; set; }
+        public bool IsActive { get; set; }
+    }
+}
+
+
+
 using GoRegister.ApplicationCore.Domain.Settings.Services;
 using GoRegister.ApplicationCore.Framework.Multitenancy;
 using GoRegister.ApplicationCore.Framework.Multitenancy.Filters;
