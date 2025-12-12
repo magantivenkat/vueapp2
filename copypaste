@@ -1,6 +1,40 @@
 
 public async Task DeleteAsync(int projectId, int languageId)
 {
+    // 1️⃣ Soft delete record in MRFLanguage
+    var mrfLanguage = await _db.MRFLanguage
+        .FirstOrDefaultAsync(x => x.ProjectId == projectId && x.LanguageId == languageId);
+
+    if (mrfLanguage != null)
+    {
+        mrfLanguage.IsActive = false;
+    }
+
+    // 2️⃣ Get ALL LanguageResource IDs for this language
+    var langResourceIds = await _db.LanguageResource
+        .Where(lr => lr.LanguageId == languageId)
+        .Select(lr => lr.Id)
+        .ToListAsync();
+
+    if (langResourceIds.Any())
+    {
+        // 3️⃣ Hard delete MRFLanguageResource rows using LanguageResourceId FK
+        var mrfLangResRows = await _db.MRFLanguageResource
+            .Where(m => m.ProjectId == projectId &&
+                        langResourceIds.Contains(m.LanguageResourceId))
+            .ToListAsync();
+
+        if (mrfLangResRows.Any())
+        {
+            _db.MRFLanguageResource.RemoveRange(mrfLangResRows);
+        }
+    }
+
+    await _db.SaveChangesAsync();
+}
+
+public async Task DeleteAsync(int projectId, int languageId)
+{
     // Soft delete from MRFLanguage
     var mrfLanguage = await _db.MRFLanguage
         .FirstOrDefaultAsync(x => x.ProjectId == projectId && x.LanguageId == languageId);
