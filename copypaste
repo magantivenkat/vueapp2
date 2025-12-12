@@ -1,3 +1,6 @@
+https://localhost:5021/admin/project/112/LanguageMapping/AddLanguage
+https://localhost:5021/admin/LanguageMapping/Edit?
+
 using GoRegister.ApplicationCore.Domain.Clients;
 using GoRegister.ApplicationCore.Domain.ServiceLanguageMapping;
 using GoRegister.ApplicationCore.Domain.Settings.Models;
