@@ -1,4 +1,73 @@
 
+
+<tbody>
+@{
+    var mappingList = ViewBag.ServiceLanguageMappingList as List<ServiceLanguageMappingModel>;
+}
+
+@if (mappingList == null || !mappingList.Any())
+{
+    <tr>
+        <td colspan="3" class="text-center text-muted">
+            No language mapped
+        </td>
+    </tr>
+}
+else
+{
+    foreach (var dt in mappingList)
+    {
+        <tr>
+            <td>@dt.RequestLanguage</td>
+            <td>@(dt.IsActive ? "Active" : "Inactive")</td>
+            <td>
+                <form asp-action="ToggleStatus"
+                      asp-route-projectId="@ViewBag.ProjectId"
+                      asp-route-langId="@dt.LanguageId"
+                      method="post">
+
+                    <button type="submit"
+                            class="btn btn-sm @(dt.IsActive ? "btn-warning" : "btn-success")">
+                        @(dt.IsActive ? "Deactivate" : "Activate")
+                    </button>
+                </form>
+            </td>
+        </tr>
+    }
+}
+</tbody>
+
+
+[HttpPost]
+public async Task<IActionResult> ToggleStatus(int projectId, int langId)
+{
+    await _languageMappingService.UpdateMRFLanguage(
+        projectId,
+        langId,
+        isActive: null // toggle inside service
+    );
+
+    TempData["SuccessMessage"] = "Language status updated successfully.";
+    return RedirectToAction(nameof(AddLanguage));
+}
+
+
+public async Task UpdateMRFLanguage(int projectId, int langId, bool? isActive = null)
+{
+    var entity = await _context.MRFLanguage
+        .FirstOrDefaultAsync(x => x.ProjectId == projectId && x.LanguageId == langId);
+
+    if (entity == null)
+        return;
+
+    entity.IsActive = isActive ?? !entity.IsActive;
+    await _context.SaveChangesAsync();
+}
+
+
+
+
+-----------------------------------------------------------------------------------------------------------------------------------------------
 @using GoRegister.ApplicationCore.Domain.ServiceLanguageMapping
 @model GoRegister.ApplicationCore.Domain.ServiceLanguageMapping.ServiceLanguageMappingModel
 <div class="card">
