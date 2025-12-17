@@ -1,3 +1,309 @@
+
+@using GoRegister.ApplicationCore.Domain.ServiceLanguageMapping
+@model GoRegister.ApplicationCore.Domain.ServiceLanguageMapping.ServiceLanguageMappingModel
+<div class="card">
+	<div class="card-header">
+		<h3>
+			MRF Language Mapping
+		</h3>
+	</div>
+	<div class="card-body">
+		<div class="row">
+			<div class="col-md-4">
+				@using (Html.BeginForm())
+				{
+					<div class="form-group">
+						<label asp-for="RequestLanguage">Select Languages(s)</label>
+						<select asp-for="LanguageId" class="auto-complete-select form-control">
+							@if (ViewBag.LanguageList != null)
+							{
+								foreach (var cty in ViewBag.LanguageList)
+								{
+									<option value="@cty.Value">@cty.Text</option>
+								}
+							}
+						</select>
+						<input type="hidden" id="rql" asp-for="RequestLanguage" />
+						<input type="hidden" id="rqlid" asp-for="LanguageId" />
+						<input type="hidden" id="addedit" asp-for="AddEdit" />
+					</div>
+					<div class="form-group">
+						<label>IsActive</label>
+						<select asp-for="IsActive" class="form-control" id="IsActive">
+							<option value="true">Active</option>
+							<option value="false">InActive</option>
+						</select>
+					</div>
+					<div>
+						<input class="btn btn-success mt-2" type="submit" value="Save" id="save" />
+						<button type="button" class="btn btn-secondary mt-2" id="clear" onclick="clear()">
+							Clear
+						</button>
+					</div>
+				}
+			</div>
+		</div>
+	</div>
+</div>
+
+
+@if (TempData["ErrorMessage"] != null)
+{
+	<div class="alert alert-danger">
+		@TempData["ErrorMessage"]
+	</div>
+}
+@if (TempData["SuccessMessage"] != null)
+{
+	<div class="alert alert-success">
+		@TempData["SuccessMessage"]
+	</div>
+}
+
+
+<div class="card">
+	<div class="card-header">
+		<h3>
+			Mapped Language(s)
+		</h3>
+	</div>
+	<div class="card-body">
+		<table class="table table-hover table-bordered">
+			<thead class="table-dark">
+				<tr>
+					<th style="width:40%">Language(s)</th>
+					<th style="width:30%">IsActive</th>
+					<th style="width:15%">Edit</th>
+					<th style="width:15%">Delete</th>
+				</tr>
+			</thead>
+			<tbody>
+				@{
+					var mappingList = ViewBag.ServiceLanguageMappingList as List<ServiceLanguageMappingModel>;
+				}
+				@if (mappingList == null || !mappingList.Any())
+				{
+					<tr>
+						<td colspan="4" class="text-center">No language mapped</td>
+					</tr>
+				}
+				else
+				{
+					foreach (var dt in mappingList)
+					{
+						<tr>
+							<td>
+								@dt.RequestLanguage
+							</td>
+							<td>
+								@(dt.IsActive ? "Active" : "InActive")
+							</td>
+							<td>
+								<button class="btn btn-outline-primary toggleBtn" type="button">@((dt.IsActive) ? "Deactivate" : "Activate")</button>
+							</td>
+							@* <td>
+					<button id="edit" onclick="edit('@dt.LanguageId',this)" class="btn btn-primary btn-sm">Edit</button>
+					</td>
+					<td>
+					<button id="deletemap" onclick="deletemap('@dt.LanguageId',this)" class="btn btn-danger btn-sm">Delete</button>
+					</td> *@
+						</tr>
+					}
+				}
+			</tbody>
+		</table>
+	</div>
+</div>
+
+@section Scripts {
+	<script>
+		$(document).ready(function () {
+			$('.auto-complete-select').select2({
+				multiple: true,
+				placeholder: '~ choose ~',
+				allowClear: true
+			});
+
+			if ($('#rqlid').val() != null && $('#rqlid').val() != "") {
+				var selectedValues = new Array();
+				selectedValues = $('#rqlid').val().split(',').map(function (item) {
+					return item.trim();
+				});
+				$(".auto-complete-select").val(selectedValues).trigger('change');
+			} else {
+				$(".auto-complete-select").val(null).trigger('change');
+			}
+		});
+		$(function () {
+			$("#save").click(function () {
+				var dt = $('.auto-complete-select').val();
+				var isActive = $("#IsActive").val();
+				if (dt == '') {
+					//$('#smsg').text('Please select a language.');
+					return;
+				} else {
+					//$('#smsg').text('');
+				}
+				$("#rql").val(dt);
+				$("#rqlid").val(dt);
+				$("#IsActive").val(isActive);
+			});
+		});
+
+		function edit(langId, e) {
+			var url = `/admin/project/${@ViewBag.ProjectId}/LanguageMapping/Edit`;
+			$.ajax({
+				url: url,
+				data: { langid: langId },
+				type: 'GET',
+				success: function (data) {
+					$("#rqlid").val(data.languageId);
+					$("#IsActive").val(data.isActive.toString());
+					$(".auto-complete-select").val([data.languageId]).trigger('change');
+					$('.auto-complete-select').prop('disabled', true);
+					$("#addedit").val("Edit");
+					$("#save").val("Update");
+				},
+				error: function () {
+					alert("Failed to load editing item.");
+				}
+			});
+		}
+		function clear() {
+			$(".auto-complete-select").prop('disabled', false);
+			$(".auto-complete-select").val(null).trigger('change');
+			$("#IsActive").val("true");
+			$("#addedit").val("Add");
+			$("#save").val("Save");
+			$("#rqlid").val("");
+		}
+
+		function deletemap(id, e) {
+			var url = '/admin/project/' + @ViewBag.ProjectId + '/LanguageMapping/Delete'
+			$.ajax({
+				url: url,
+				data: { langid: id },
+				type: 'GET',
+				datatype: 'json',
+				success: function (r) {
+					$(e).closest('tr').remove();
+					$("#lblcount").text(r);
+				},
+				error: function (e) {
+					alert(e);
+				},
+			});
+		}
+	</script>
+}
+using GoRegister.ApplicationCore.Data.Models;
+using GoRegister.ApplicationCore.Domain.Clients;
+using GoRegister.ApplicationCore.Domain.Projects.Services;
+using GoRegister.ApplicationCore.Domain.CustomFieldResource;
+using GoRegister.ApplicationCore.Domain.Settings.Models;
+using GoRegister.ApplicationCore.Domain.Settings.Services;
+using GoRegister.Areas.Admin.Controllers;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.CodeAnalysis;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Security.Claims;
+using System.Threading.Tasks;
+
+namespace GoRegister.Areas.Admin.Features.CustomFieldMapping
+{
+	public class CustomFieldMappingController : ProjectAdminControllerBase
+	{
+		private readonly IProjectService _projectService;
+		private readonly ISettingsService _settingsService;
+		private readonly IClientService _clientservice;
+		private readonly ICustomFieldResourceCacheService _customFieldMappingService;
+		public CustomFieldMappingController(ICustomFieldResourceCacheService languageMappingService, IProjectService projectService, ISettingsService settingsService, IClientService clientService)
+		{
+			_customFieldMappingService = languageMappingService;
+			_projectService = projectService;
+			_settingsService = settingsService;
+			_clientservice = clientService;
+		}
+
+		[HttpGet]
+		public async Task<IActionResult> AddCustomFieldMapping(int projectId)
+		{
+			var vm = await _customFieldMappingService.LoadPageAsync(projectId);
+			return View(vm);
+		}
+
+		[HttpPost]
+		public async Task<IActionResult> AddCustomFieldMapping([FromForm] CustomFieldResourceViewModel vm, int projectId)
+		{
+			// Required fields check
+			if (vm.SelectedLanguageId == 0 ||
+				vm.SelectedFieldId == 0 ||
+				string.IsNullOrWhiteSpace(vm.LanguageResourceText))
+			{
+				vm.ValidationMessage = "All fields are required.";
+				vm = await _customFieldMappingService.ReloadPageWithSelectionsAsync(vm);
+				return View(vm);
+			}
+
+			// INSERT MODE
+			if (!vm.MRFLanguageResourceId.HasValue)
+			{
+				var exists = await _customFieldMappingService.ExistsAsync(projectId,
+														vm.SelectedLanguageId,
+														vm.SelectedFieldId);
+
+				if (exists)
+				{
+					vm.ValidationMessage = "A resource already exists for selected Language + Custom Field combination.";
+					vm = await _customFieldMappingService.ReloadPageWithSelectionsAsync(vm);
+					return View(vm);
+				}
+
+				await _customFieldMappingService.SaveAsync(vm);
+				TempData["SuccessMessage"] = "Translation added successfully!";
+			}
+			else
+			{
+				// UPDATE MODE
+				await _customFieldMappingService.UpdateAsync(vm);
+				TempData["SuccessMessage"] = "Translation updated successfully!";
+			}
+			return RedirectToAction(nameof(AddCustomFieldMapping));
+		}
+
+		[HttpPost("delete")]
+		public async Task<IActionResult> Delete(int id, int projectId)
+		{
+			await _customFieldMappingService.DeleteAsync(id, projectId);
+			TempData["SuccessMessage"] = "Translation deleted successfully!";
+			return RedirectToAction(nameof(AddCustomFieldMapping), new { projectId });
+		}
+
+		[HttpGet("edit")]
+		public async Task<IActionResult> Edit(int id, int projectId)
+		{
+			var vm = await _customFieldMappingService.LoadPageAsync(projectId);
+			var editItem = await _customFieldMappingService.LoadForEditAsync(id, projectId);
+
+			vm.MRFLanguageResourceId = editItem.MRFLanguageResourceId;
+			vm.SelectedLanguageId = editItem.SelectedLanguageId;
+			vm.SelectedFieldId = editItem.SelectedFieldId;
+			vm.LanguageResourceText = editItem.LanguageResourceText;
+			vm.DataTag = editItem.DataTag;
+			//vm.IsActive = editItem.IsActive;
+
+			return View(nameof(AddCustomFieldMapping), vm);
+		}
+
+	}
+}
+
+
+============================================================================================
+
+
 using GoRegister.ApplicationCore.Data.Models;
 using GoRegister.ApplicationCore.Domain.Clients;
 using GoRegister.ApplicationCore.Domain.Projects.Services;
