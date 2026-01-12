@@ -1,3 +1,66 @@
+
+using Npgsql;
+using System.Data;
+
+public class PostgresService
+{
+    private readonly IConfiguration _config;
+
+    public PostgresService(IConfiguration config)
+    {
+        _config = config;
+    }
+
+    public async Task CallStoredProcedureAsync()
+    {
+        var connString = _config.GetConnectionString("PostgresDb");
+        await using (var conn = new NpgsqlConnection(connString))
+        {
+            await conn.OpenAsync();
+            await using (var tran = await conn.BeginTransactionAsync())
+            {
+                await using (var cmd = new NpgsqlCommand(
+                        "CALL meetings_central.getsubsidiaries(@p_cursor);", conn, tran))
+                {
+                    cmd.Parameters.Add(new NpgsqlParameter("p_cursor", NpgsqlTypes.NpgsqlDbType.Refcursor)
+                    {
+                        Direction = ParameterDirection.InputOutput,
+                        Value = "mycursor"
+                    });
+                    await cmd.ExecuteNonQueryAsync();
+                }
+
+                await using (var fetch = new NpgsqlCommand("FETCH ALL FROM mycursor;", conn, tran))
+                await using (var reader = await fetch.ExecuteReaderAsync())
+                {
+                    if (!reader.HasRows)
+                    {
+                        Console.WriteLine("No rows returned by the cursor!");
+                    }
+                    while (await reader.ReadAsync())
+                    {
+                        var id = reader.GetInt32(0);
+                        var name = reader.GetString(1);
+                        var uuid = reader.GetString(2);
+                        Console.WriteLine($"id={id} name={name} uuid={uuid}");
+                    }
+                }
+
+                await using (var close = new NpgsqlCommand("CLOSE mycursor;", conn, tran))
+                {
+                    await close.ExecuteNonQueryAsync();
+                }
+
+                await tran.CommitAsync();
+            }
+        }
+
+
+    }
+}
+
+=================================================================================================
+
 @model GoRegister.ApplicationCore.Domain.Registration.FormModel
 
 @using Newtonsoft.Json;
